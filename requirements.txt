@@ -1,6 +1,0 @@
-bcrypt==4.3.0
-fastapi==0.115.11
-fastapi-cli==0.0.7
-python-dotenv==1.0.1
-python-multipart==0.0.20
-requests==2.32.3
