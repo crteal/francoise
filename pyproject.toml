@@ -3,6 +3,7 @@ name = "francoise"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
+    "alembic==1.19.1",
     "bcrypt==5.0.0",
     "fastapi[standard]==0.120.2",
     "python-dotenv==1.2.1",
