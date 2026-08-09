@@ -1,6 +1,7 @@
 import unittest
+from datetime import datetime
 
-from françoise.persona import build_persona_prompt, build_prompt
+from françoise.persona import build_persona_prompt, build_prompt, temporal_context
 
 
 class TestPersona(unittest.TestCase):
@@ -51,6 +52,17 @@ class TestPersona(unittest.TestCase):
         prompt = build_prompt(self.agent, messages=messages, window=5)
         self.assertIn('m29', prompt)
         self.assertNotIn('m0\n', prompt)
+
+
+    def test_prompt_holds_date_and_weekday(self):
+        prompt = build_prompt(self.agent)
+        now = datetime.now()
+        self.assertIn(now.strftime('%A'), prompt)  # weekday
+        self.assertIn(now.strftime('%Y'), prompt)  # date
+
+    def test_temporal_context_reports_season(self):
+        self.assertIn('summer', temporal_context(datetime(2026, 7, 1)))
+        self.assertIn('winter', temporal_context(datetime(2026, 1, 1)))
 
 
 if __name__ == '__main__':
