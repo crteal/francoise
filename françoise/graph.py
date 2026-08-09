@@ -10,6 +10,7 @@ from françoise.vocab import (
     SCHEMA_PREDICATES,
     agent_iri,
     entity_iri,
+    event_iri,
     message_iri,
     place_iri,
     topic_iri,
@@ -130,6 +131,40 @@ class Graph:
         self.assert_quad(
             place_iri(region), FR_PREDICATES['signal'], summary,
             graph=GRAPHS['world'], literal=True)
+
+    def read_events(self, agent_id: int) -> list[str]:
+        """The agent's past synthetic events as first-person text lines."""
+        synthetic = GRAPHS['synthetic']
+        rows = self.query(
+            'SELECT ?t WHERE { GRAPH <%s> { <%s> <%s> ?e . ?e <%s> ?t } }'
+            % (synthetic, agent_iri(agent_id), SCHEMA_PREDICATES['mentions'],
+               SCHEMA_PREDICATES['name']))
+        return [r['t'].value for r in rows]
+
+    def assert_synthetic_event(self, agent_id: int, region: str, text: str) -> bool:
+        """Assert a first-person event into the `synthetic` graph.
+
+        Mints an event node from `text`, gives it a `name` literal, links the
+        agent to it, and links it to the region's world node so the event keeps
+        its world signal. Returns False without asserting when the same event
+        already exists (a conflict), True otherwise.
+        """
+        synthetic = GRAPHS['synthetic']
+        event = event_iri(text)
+        if bool(self.query(
+                'ASK { GRAPH <%s> { <%s> <%s> ?t } }'
+                % (synthetic, event, SCHEMA_PREDICATES['name']))):
+            return False
+        self.assert_quad(
+            event, SCHEMA_PREDICATES['name'], text,
+            graph=synthetic, literal=True)
+        self.assert_quad(
+            agent_iri(agent_id), SCHEMA_PREDICATES['mentions'], event,
+            graph=synthetic)
+        self.assert_quad(
+            event, SCHEMA_PREDICATES['mentions'], place_iri(region),
+            graph=synthetic)
+        return True
 
     def persona_terms(self, agent_id: int) -> set[str]:
         """The agent's grounding terms: its interests, home location, and the

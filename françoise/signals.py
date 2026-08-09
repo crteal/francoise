@@ -110,6 +110,37 @@ def ground_signals(graph, agent_id: int, signals) -> list[dict]:
     return [s for s in signals if _signal_terms(s) & terms]
 
 
+def default_model(persona: str, past_events, signal: dict) -> str:
+    """Draft a first-person event from a grounded signal.
+
+    A placeholder for the LLM synthesis step. Returns nothing so an unwired
+    deployment synthesizes nothing rather than guessing. Inject a real model
+    via `synthesize`.
+    """
+    # ponytail: no-op until the LLM model lands; inject one via `synthesize`.
+    return ''
+
+
+def synthesize(graph, agent_id: int, signal: dict, model=default_model) -> str:
+    """Make a first-person synthetic event from a grounded world signal.
+
+    Asks `model` for an event that fits the persona and the past events, checks
+    it against the graph for a conflict (an identical event already asserted),
+    and asserts it into the `synthetic` graph linked to the region's world
+    node. Returns the event text, or '' when the model drafts nothing or the
+    event conflicts. `model` is injected so the assert flow stays testable.
+    """
+    terms = graph.persona_terms(agent_id)
+    persona = ', '.join(sorted(terms))
+    text = model(persona, graph.read_events(agent_id), signal).strip()
+    if not text:
+        return ''
+    region = signal.get('place', '')
+    if not graph.assert_synthetic_event(agent_id, region, text):
+        return ''
+    return text
+
+
 if __name__ == '__main__':
     xmas = calendar_signal(date(2026, 12, 25))
     assert xmas['topic'] == 'calendar'
