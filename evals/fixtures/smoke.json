@@ -1,0 +1,4 @@
+[
+  {"input": "Say bonjour", "expected": "Bonjour"},
+  {"input": "Say merci", "expected": "Merci"}
+]
