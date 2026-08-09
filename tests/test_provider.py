@@ -48,6 +48,33 @@ class TestProvider(unittest.TestCase):
         mock_completion.assert_called_once_with(
             messages=messages, model='gpt-4', api_key='sk-secret')
 
+    @patch('françoise.chat.litellm.completion')
+    @patch('françoise.chat.anthropic.Anthropic')
+    def test_chat_uses_native_anthropic_path_with_caching(
+            self, mock_anthropic, mock_completion):
+        mock_anthropic.return_value.messages.create.return_value = SimpleNamespace(
+            content=[SimpleNamespace(text='Bonjour !')])
+
+        messages = [
+            {'role': 'system', 'content': 'You are Françoise.'},
+            {'role': 'user', 'content': 'Hello'}]
+        reply = Provider().chat(messages, model='anthropic/claude-opus-4-8')
+
+        self.assertEqual(reply, 'Bonjour !')
+        # The native path runs, not LiteLLM.
+        mock_completion.assert_not_called()
+
+        _, kwargs = mock_anthropic.return_value.messages.create.call_args
+        # The bare model id reaches the SDK, the system prompt is lifted out
+        # of the turns, and it is cached.
+        self.assertEqual(kwargs['model'], 'claude-opus-4-8')
+        self.assertEqual(kwargs['messages'], [{'role': 'user', 'content': 'Hello'}])
+        self.assertEqual(kwargs['system'], [{
+            'type': 'text',
+            'text': 'You are Françoise.',
+            'cache_control': {'type': 'ephemeral'},
+        }])
+
 
 if __name__ == '__main__':
     unittest.main()
