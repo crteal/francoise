@@ -22,6 +22,15 @@ def exact_match(reply: str, expected: str) -> float:
     return 1.0 if reply.strip() == expected.strip() else 0.0
 
 
+def contains(reply: str, expected: str) -> float:
+    """Score 1.0 if the expected fact appears in the reply, else 0.0.
+
+    Used by the identity eval: replies are prose, so we check the persona
+    fact is present rather than requiring an exact match.
+    """
+    return 1.0 if expected.strip().lower() in reply.lower() else 0.0
+
+
 def run(
         cases: Sequence[dict],
         config: dict,
