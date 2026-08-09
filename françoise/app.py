@@ -23,7 +23,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 
 from .core import handle_inbound, stream_inbound
 from .db import open_db
-from .mail import parse_conversation_id_from_headers, send_mail
+from .mail import parse_conversation_id_from_headers, send_mail, verify_signature
 from .presence import is_free, presence_label, presence_local_time
 
 LOGIN_FORM = """<!DOCTYPE html>
@@ -296,7 +296,13 @@ def App(**kwargs):
             message: Annotated[str, Form(alias='body-plain')],
             sender: Annotated[str, Form()],
             subject: Annotated[str, Form()],
+            timestamp: Annotated[str, Form()],
+            token: Annotated[str, Form()],
+            signature: Annotated[str, Form()],
             background_tasks: BackgroundTasks) -> None:
+        if not verify_signature(
+                MAILGUN_API_KEY, timestamp, token, signature):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
         background_tasks.add_task(
                 chat_and_reply,
                 headers,
