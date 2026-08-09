@@ -2,12 +2,16 @@ from contextlib import contextmanager
 
 from pyoxigraph import NamedNode, Quad, Store
 
+from françoise.vocab import PREDICATES
+
 
 class Graph:
     def __init__(self, store):
         self.store = store
 
     def assert_quad(self, subject: str, predicate: str, object: str):
+        if predicate not in PREDICATES:
+            raise ValueError('unknown predicate: %s' % predicate)
         self.store.add(Quad(
             NamedNode(subject),
             NamedNode(predicate),
