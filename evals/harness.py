@@ -57,6 +57,42 @@ def level_fit(reply: str, expected: str) -> float:
     return 1.0 if cefr_level(reply) == expected.strip().upper() else 0.0
 
 
+def recall(reply: str, expected: str, forbidden: str = None) -> float:
+    """Score 1.0 when the reply recalls `expected` and mis-attributes nothing.
+
+    Fails (0.0) if the recalled fact is absent, or if a `forbidden` synthetic
+    fact is present — i.e. the persona treats a fact it invented as the user's.
+    """
+    if forbidden and forbidden.strip().lower() in reply.lower():
+        return 0.0
+    return 1.0 if expected.strip().lower() in reply.lower() else 0.0
+
+
+def run_memory(
+        cases: Sequence[dict],
+        config: dict,
+        provider: Provider = None) -> float:
+    """Run multi-turn recall cases: store a fact early, ask for it later.
+
+    Each case is `{"turns": [str, ...], "expected": str, "forbidden": str?}`.
+    Every turn is a user message; earlier replies accumulate into the history so
+    the final ask sees the stored fact. Scores the final reply with `recall`.
+    """
+    provider = provider or Provider()
+    if not cases:
+        return 0.0
+    total = 0.0
+    for case in cases:
+        history = []
+        reply = ''
+        for turn in case['turns']:
+            history.append({'role': 'user', 'content': turn})
+            reply = provider.chat(history, **config)
+            history.append({'role': 'assistant', 'content': reply})
+        total += recall(reply, case['expected'], case.get('forbidden'))
+    return total / len(cases)
+
+
 def run(
         cases: Sequence[dict],
         config: dict,
