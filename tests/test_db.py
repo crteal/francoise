@@ -18,14 +18,14 @@ class TestAccountScope(unittest.TestCase):
             self.account_two = db.create_account('Two')[0]
 
         with open_db(self.db_path, account_id=self.account_one) as db:
-            user = db.create_user('Alice', 'alice@example.com', 'salt', 'pw')
+            user = db.create_user('Alice', 'alice@example.com', 'hash')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation_one = db.create_conversation(
                 user_id=user[0], agent_id=agent[0],
                 proficiency='A1', model='m')[0]
 
         with open_db(self.db_path, account_id=self.account_two) as db:
-            user = db.create_user('Bob', 'bob@example.com', 'salt', 'pw')
+            user = db.create_user('Bob', 'bob@example.com', 'hash')
             agent = db.create_agent('Kimi', 'French', 'A1', 'You are {agent_name}.')
             self.conversation_two = db.create_conversation(
                 user_id=user[0], agent_id=agent[0],
@@ -45,7 +45,7 @@ class TestAccountScope(unittest.TestCase):
             with self.assertRaises(Exception):
                 db.get_conversation(self.conversation_one)
             with self.assertRaises(Exception):
-                db.create_user('Eve', 'eve@example.com', 'salt', 'pw')
+                db.create_user('Eve', 'eve@example.com', 'hash')
 
 
 if __name__ == '__main__':

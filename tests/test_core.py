@@ -19,7 +19,7 @@ class TestCore(unittest.TestCase):
             account = db.create_account('Acme')
         self.account_id = account[0]
         with open_db(self.db_path, account_id=self.account_id) as db:
-            user = db.create_user('Alice', 'alice@example.com', 'salt', 'password')
+            user = db.create_user('Alice', 'alice@example.com', 'hash')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation = db.create_conversation(
                 user_id=user[0],
