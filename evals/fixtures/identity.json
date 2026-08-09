@@ -1,0 +1,5 @@
+[
+  {"input": "Where do you live?", "expected": "Paris"},
+  {"input": "What is your native language?", "expected": "French"},
+  {"input": "What is your name?", "expected": "Françoise"}
+]
