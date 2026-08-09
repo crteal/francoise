@@ -1,5 +1,14 @@
 from collections.abc import Sequence
+import litellm
 import requests
+
+
+class Provider:
+    """Thin seam over LiteLLM so we can reach many model hosts through one interface."""
+
+    def chat(self, messages: Sequence[dict[str, str]], **kwargs) -> str:
+        response = litellm.completion(messages=list(messages), **kwargs)
+        return response.choices[0].message.content
 
 
 def message_tuple_to_dict(values: tuple[str, str]):
