@@ -5,7 +5,23 @@ composed from trusted fields we control, so user-supplied text can never reach
 it. The user's text is passed to the model as a user message instead.
 """
 
+from datetime import datetime
+
 PERSONA_FIELDS = ('location', 'timezone', 'interests', 'age', 'native_language')
+
+# ponytail: northern-hemisphere seasons by month; add hemisphere lookup if
+# southern-hemisphere personas ever matter.
+_SEASONS = ('winter', 'spring', 'summer', 'autumn')
+
+
+def temporal_context(now: datetime = None) -> str:
+    """Render the local date, weekday, and season as prompt lines."""
+    now = now or datetime.now()
+    season = _SEASONS[(now.month % 12) // 3]
+    return '\n'.join((
+        'Today is %s.' % now.strftime('%A, %B %d, %Y'),
+        'The season is %s.' % season,
+    ))
 
 LABELS = {
     'location': 'Location',
@@ -37,7 +53,7 @@ def build_prompt(agent: dict, facts=(), messages=(), window: int = 20) -> str:
     the last `window` turns form the short-term memory. Both memory sections
     are trusted context we control, kept out of the user message stream.
     """
-    parts = [build_persona_prompt(agent)]
+    parts = [build_persona_prompt(agent), temporal_context()]
     if facts:
         parts.append('Facts you remember:\n' + '\n'.join(facts))
     recent = list(messages)[-window:]
