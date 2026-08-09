@@ -73,9 +73,13 @@ class TestDeferReply(unittest.TestCase):
         with patch('françoise.app.is_free', side_effect=lambda *a: next(states)):
             self._post()
 
-        # The reply reached the stream once the persona was free.
+        # The reply reached the stream once the persona was free. The stream
+        # also carries a presence-refresh fragment, so scan all fragments.
         self.assertFalse(channel.empty())
-        self.assertIn('Bonjour !', channel.get_nowait())
+        fragments = []
+        while not channel.empty():
+            fragments.append(channel.get_nowait())
+        self.assertTrue(any('Bonjour !' in f for f in fragments))
 
 
 if __name__ == '__main__':
