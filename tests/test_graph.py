@@ -3,7 +3,13 @@ import tempfile
 import unittest
 
 from françoise.graph import open_graph
-from françoise.vocab import FR_PREDICATES
+from françoise.vocab import (
+    FR_PREDICATES,
+    GRAPHS,
+    SCHEMA_PREDICATES,
+    agent_iri,
+    topic_iri,
+)
 
 
 class TestGraph(unittest.TestCase):
@@ -35,6 +41,28 @@ class TestGraph(unittest.TestCase):
                     'http://example.com/subject',
                     'http://example.com/unknown',
                     'http://example.com/object')
+
+
+    def test_seed_persona(self):
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema', 'cooking'])
+
+            agent = agent_iri(1)
+            real = GRAPHS['real']
+
+            # The agent has a self name fact in the real graph.
+            rows = list(graph.query(
+                'SELECT ?o WHERE { GRAPH <%s> { <%s> <%s> ?o } }'
+                % (real, agent, SCHEMA_PREDICATES['name'])))
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(str(rows[0]['o']), '"Boku"')
+
+            # Each interest has a topic node and a trait edge.
+            for interest in ('cinema', 'cooking'):
+                topic = topic_iri(interest)
+                self.assertTrue(bool(graph.query(
+                    'ASK { GRAPH <%s> { <%s> <%s> <%s> } }'
+                    % (real, agent, FR_PREDICATES['enjoys'], topic))))
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 """The vocabulary: Schema.org classes and predicates, local fr: predicates,
 and the names of the provenance graphs. Everything lives here in one place."""
 
+from urllib.parse import quote
+
 SCHEMA = 'https://schema.org/'
 FR = 'https://françoise.example/vocab#'
 
@@ -38,3 +40,13 @@ GRAPHS = {
     'synthetic': FR + 'graph/synthetic',
     'inferred': FR + 'graph/inferred',
 }
+
+
+def agent_iri(agent_id: int) -> str:
+    """The IRI for an agent's self node."""
+    return FR + 'agent/%d' % agent_id
+
+
+def topic_iri(interest: str) -> str:
+    """The IRI for an interest's topic node."""
+    return FR + 'topic/' + quote(interest.strip().lower(), safe='')
