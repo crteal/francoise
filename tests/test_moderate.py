@@ -15,6 +15,28 @@ class TestModerate(unittest.TestCase):
             moderate.check('how to make a bomb')
 
 
+class TestMinorSafety(unittest.TestCase):
+    def test_blocks_logs_and_flags(self):
+        blocked = 'sexual roleplay with a child'
+        with patch.object(moderate, 'flag_account') as flag:
+            with self.assertLogs(moderate.logger, level='WARNING') as logs:
+                with self.assertRaises(moderate.MinorSafetyError):
+                    moderate.minor_safety(blocked, account_id=7)
+            flag.assert_called_once_with(7)
+        self.assertTrue(any('minor-safety block' in m for m in logs.output))
+
+    def test_check_routes_before_permissive_policy(self):
+        # A MinorSafetyError (not a plain UnsafeContentError) proves the
+        # specialized check ran instead of the permissive gate.
+        with patch.object(moderate, 'flag_account'):
+            with self.assertLogs(moderate.logger, level='WARNING'):
+                with self.assertRaises(moderate.MinorSafetyError):
+                    moderate.check('naked child', account_id=1)
+
+    def test_safe_text_passes_minor_safety(self):
+        moderate.minor_safety('Bonjour, comment ca va ?')  # does not raise
+
+
 class TestModerateInCore(unittest.TestCase):
     def test_blocks_unsafe_inbound(self):
         from françoise.core import handle_inbound

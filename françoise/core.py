@@ -40,7 +40,7 @@ def handle_inbound(conversation_id: int, text: str) -> str:
         messages = db.get_messages_by_conversation(conversation_id)
         message_objects = list(map(message_tuple_to_dict, [prompt] + messages))
         reply = chat(message_objects, model=conversation.get('model'), url=llm_api_chat_url)
-        moderate(reply)
+        moderate(reply, account_id=account_id)
         db.add_assistant_message(conversation_id, reply)
 
     return reply
@@ -79,5 +79,5 @@ def stream_inbound(conversation_id: int, text: str) -> Iterator[str]:
             yield chunk
 
         reply = ''.join(chunks)
-        moderate(reply)
+        moderate(reply, account_id=account_id)
         db.add_assistant_message(conversation_id, reply)
