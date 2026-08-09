@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Friends</title>
+    <script src="https://unpkg.com/htmx.org@2"></script>
+</head>
+<body>
+    <h1>Friends</h1>
+    <p><a href="/agents/new">Add a friend</a></p>
+    {% if agents %}
+    <ul>
+        {% for agent in agents %}
+        <li>
+            {{ agent.name }} — {{ agent.language }} ({{ agent.proficiency }})
+            {% if agent.location %}— {{ agent.location }}{% endif %}
+            <form method="post" action="/agents/{{ agent.id }}/start">
+                <button type="submit">Start conversation</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No friends yet.</p>
+    {% endif %}
+</body>
+</html>
