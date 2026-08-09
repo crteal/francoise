@@ -44,6 +44,10 @@ class TestCore(unittest.TestCase):
         self.assertIn(('user', 'Hello'), messages)
         self.assertIn(('assistant', 'Bonjour !'), messages)
 
+    def test_handle_inbound_raises_when_conversation_missing(self):
+        with self.assertRaises(Exception):
+            handle_inbound(999999, 'Hello')
+
 
 if __name__ == '__main__':
     unittest.main()
