@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Account settings</title>
+</head>
+<body>
+    <p><a href="/">Back</a></p>
+    <h1>Account settings</h1>
+    <form method="post" action="/settings">
+        <label>
+            <input type="checkbox" name="always_available" value="yes"
+                {% if always_available %}checked{% endif %}>
+            Always available (adult personas reply without waiting)
+        </label>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

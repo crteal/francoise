@@ -8,7 +8,8 @@ tables = [
         [
             ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
             ('name', 'TEXT NOT NULL'),
-            ('created_at', 'TEXT NOT NULL')
+            ('created_at', 'TEXT NOT NULL'),
+            ('always_available', 'INTEGER NOT NULL DEFAULT 0')
         ]
     ),
 
@@ -152,8 +153,15 @@ class Database:
 
     def get_account(self, id: int):
         res = self.connection.execute(
-            "SELECT id, name, created_at FROM accounts WHERE id = ?", (id,))
+            "SELECT id, name, created_at, always_available "
+            "FROM accounts WHERE id = ?", (id,))
         return res.fetchone()
+
+    def set_account_always_available(self, id: int, always_available: bool):
+        with self.connection:
+            self.connection.execute(
+                "UPDATE accounts SET always_available = ? WHERE id = ?",
+                (1 if always_available else 0, id))
 
     def get_account_id_for_conversation(self, conversation_id: int):
         # Unscoped resolver: identifies which tenant owns a conversation so a
@@ -280,6 +288,21 @@ class Database:
                 agent_id=agent_id,
                 proficiency=proficiency,
                 model_config_id=self.upsert_model_config(model))
+
+    def update_conversation_settings(
+            self,
+            conversation_id: int,
+            proficiency: str,
+            model: str):
+        # Reuse the same model-config upsert `create_conversation` uses so a
+        # model string maps to a single shared row, then repoint the FK.
+        model_config_id = self.upsert_model_config(model)
+        with self.connection:
+            self.connection.execute(
+                "UPDATE conversations SET proficiency = ?, model_config_id = ? "
+                "WHERE id = ? AND account_id = ?",
+                (proficiency, model_config_id, conversation_id,
+                 self.require_account()))
 
     def create_message(self, conversation_id: int, role: str, content: str):
         # messages are scoped through their conversation's account

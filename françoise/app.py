@@ -294,6 +294,60 @@ def App(**kwargs):
              'messages': messages,
              'presence': presence})
 
+    @app.get('/c/{id}/settings', response_class=HTMLResponse)
+    def conversation_settings(
+            request: Request, id: int, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            row = db.get_conversation(id)
+            if row is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            conversation = db.conversation_to_dict(row)
+        return TEMPLATES.TemplateResponse(
+            request, 'conversation_settings.html',
+            {'conversation': conversation, 'cefr_levels': CEFR_LEVELS})
+
+    @app.post('/c/{id}/settings')
+    def update_conversation_settings(
+            request: Request,
+            id: int,
+            proficiency: Annotated[str, Form()],
+            model: Annotated[str, Form()],
+            session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            row = db.get_conversation(id)
+            if row is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            if proficiency not in CEFR_LEVELS:
+                conversation = db.conversation_to_dict(row)
+                return TEMPLATES.TemplateResponse(
+                    request, 'conversation_settings.html',
+                    {'conversation': conversation,
+                     'cefr_levels': CEFR_LEVELS,
+                     'error': 'Proficiency must be one of %s.'
+                              % ', '.join(CEFR_LEVELS)},
+                    status_code=status.HTTP_400_BAD_REQUEST)
+            db.update_conversation_settings(id, proficiency, model)
+        return RedirectResponse(
+            '/c/%d' % id, status_code=status.HTTP_303_SEE_OTHER)
+
+    @app.get('/settings', response_class=HTMLResponse)
+    def account_settings(request: Request, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            account = db.get_account(session[3])
+        return TEMPLATES.TemplateResponse(
+            request, 'account_settings.html',
+            {'always_available': bool(account[3])})
+
+    @app.post('/settings')
+    def update_account_settings(
+            session=Depends(require_session),
+            always_available: Annotated[Optional[str], Form()] = None):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            db.set_account_always_available(
+                session[3], always_available == 'yes')
+        return RedirectResponse(
+            '/settings', status_code=status.HTTP_303_SEE_OTHER)
+
     @app.get('/agents', response_class=HTMLResponse)
     def list_agents(request: Request, session=Depends(require_session)):
         with open_db(DATABASE_URL, account_id=session[3]) as db:
@@ -401,17 +455,36 @@ def App(**kwargs):
 
         return StreamingResponse(events(), media_type='text/event-stream')
 
-    def get_agent(conversation_id: int) -> dict:
+    def get_agent(conversation_id: int) -> tuple[dict, bool]:
         # The persona fields presence reads (timezone/age) ride on the
         # conversation dict; absent ones fall back to UTC/adult in presence.
+        # Also returns the owning account's always_available toggle.
         with open_db(DATABASE_URL) as resolver:
             account_id = resolver.get_account_id_for_conversation(conversation_id)
         with open_db(DATABASE_URL, account_id=account_id) as db:
-            return db.conversation_to_dict(db.get_conversation(conversation_id))
+            agent = db.conversation_to_dict(db.get_conversation(conversation_id))
+            account = db.get_account(account_id)
+        always_available = bool(account[3]) if account else False
+        return agent, always_available
 
-    async def wait_until_free(agent: dict, poll: float = 60.0) -> None:
+    def is_adult(agent: dict) -> bool:
+        # Presence treats a missing/non-numeric age as an adult (see
+        # presence._schedule), so mirror that here.
+        try:
+            return int(agent.get('age')) >= 18
+        except (TypeError, ValueError):
+            return True
+
+    async def wait_until_free(
+            agent: dict,
+            always_available: bool = False,
+            poll: float = 60.0) -> None:
         # Hold here while the persona is asleep/at school; wake in the next
         # free window. Re-checks presence each poll against the moving clock.
+        # An adult persona on an always-available account skips the wait; a
+        # child persona (age < 18) STILL defers regardless of the toggle.
+        if always_available and is_adult(agent):
+            return
         while not is_free(agent):
             await asyncio.sleep(poll)
 
@@ -419,8 +492,8 @@ def App(**kwargs):
         # Stream the reply through the core and push each chunk to the user's
         # channel so the browser shows the reply as it arrives. Hold the reply
         # until the persona is free (not asleep or at school).
-        agent = get_agent(conversation_id)
-        await wait_until_free(agent)
+        agent, always_available = get_agent(conversation_id)
+        await wait_until_free(agent, always_available)
         channel = get_channel(user_id)
         # Refresh the presence indicator now that the persona is free.
         await channel.put(presence_fragment(conversation_id, agent))
