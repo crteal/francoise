@@ -4,6 +4,15 @@ import sqlite3
 
 tables = [
     (
+        'accounts',
+        [
+            ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
+            ('name', 'TEXT NOT NULL'),
+            ('created_at', 'TEXT NOT NULL')
+        ]
+    ),
+
+    (
         'users',
          [
              ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
@@ -91,6 +100,18 @@ class Database:
             row = cursor.fetchone()
 
         return row
+
+    def create_account(self, name: str) -> tuple:
+        now = datetime.now(timezone.utc)
+        return self.table_insert(
+                'accounts',
+                name=name,
+                created_at=now.isoformat())
+
+    def get_account(self, id: int):
+        res = self.connection.execute(
+            "SELECT id, name, created_at FROM accounts WHERE id = ?", (id,))
+        return res.fetchone()
 
     def create_agent(
             self,
