@@ -172,6 +172,14 @@ class Database:
                 email=email,
                 password_hash=password_hash)
 
+    def get_user_by_email(self, email: str):
+        # Unscoped lookup: login happens before an account is known and
+        # `users.email` is globally UNIQUE.
+        res = self.connection.execute(
+            "SELECT id, name, email, password_hash FROM users WHERE email = ?",
+            (email,))
+        return res.fetchone()
+
     def create_session(
             self,
             id: str,
