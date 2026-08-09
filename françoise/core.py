@@ -8,6 +8,7 @@ from .chat import (
     message_tuple_to_dict,
 )
 from .db import open_db
+from .moderate import check as moderate
 
 
 def handle_inbound(conversation_id: int, text: str) -> str:
@@ -17,6 +18,8 @@ def handle_inbound(conversation_id: int, text: str) -> str:
     calls the LLM, persists the reply, and returns the reply text. This is
     medium-agnostic: it knows nothing about email or HTTP.
     """
+    moderate(text)
+
     database_url = os.environ.get('DATABASE_URL', 'data.db')
     llm_api_chat_url = os.environ.get('LLM_API_CHAT_URL', 'http://localhost:11434/api/chat')
 
@@ -37,6 +40,7 @@ def handle_inbound(conversation_id: int, text: str) -> str:
         messages = db.get_messages_by_conversation(conversation_id)
         message_objects = list(map(message_tuple_to_dict, [prompt] + messages))
         reply = chat(message_objects, model=conversation.get('model'), url=llm_api_chat_url)
+        moderate(reply)
         db.add_assistant_message(conversation_id, reply)
 
     return reply
@@ -48,6 +52,8 @@ def stream_inbound(conversation_id: int, text: str) -> Iterator[str]:
     Same flow as handle_inbound, but yields the reply through the provider
     seam as it arrives and persists the full reply once the stream ends.
     """
+    moderate(text)
+
     database_url = os.environ.get('DATABASE_URL', 'data.db')
 
     with open_db(database_url) as resolver:
@@ -72,4 +78,6 @@ def stream_inbound(conversation_id: int, text: str) -> Iterator[str]:
             chunks.append(chunk)
             yield chunk
 
-        db.add_assistant_message(conversation_id, ''.join(chunks))
+        reply = ''.join(chunks)
+        moderate(reply)
+        db.add_assistant_message(conversation_id, reply)
