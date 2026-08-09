@@ -17,6 +17,8 @@ class TestMailgunRoute(unittest.TestCase):
 
         upgrade_to_head(self.db_path)
         with open_db(self.db_path) as db:
+            account = db.create_account('Acme')
+        with open_db(self.db_path, account_id=account[0]) as db:
             user = db.create_user('Alice', 'alice@example.com', 'salt', 'password')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation = db.create_conversation(

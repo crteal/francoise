@@ -16,6 +16,9 @@ class TestCore(unittest.TestCase):
 
         upgrade_to_head(self.db_path)
         with open_db(self.db_path) as db:
+            account = db.create_account('Acme')
+        self.account_id = account[0]
+        with open_db(self.db_path, account_id=self.account_id) as db:
             user = db.create_user('Alice', 'alice@example.com', 'salt', 'password')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation = db.create_conversation(
@@ -39,7 +42,7 @@ class TestCore(unittest.TestCase):
         conversation_id = self.conversation[0]
         handle_inbound(conversation_id, 'Hello')
 
-        with open_db(self.db_path) as db:
+        with open_db(self.db_path, account_id=self.account_id) as db:
             messages = db.get_messages_by_conversation(conversation_id)
 
         self.assertIn(('user', 'Hello'), messages)

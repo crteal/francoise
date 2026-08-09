@@ -37,7 +37,12 @@ def App(**kwargs):
         if not conversation_id:
             raise Exception('unspecified conversation `id` in %s' % (headers,))
 
-        with open_db(DATABASE_URL) as db:
+        with open_db(DATABASE_URL) as resolver:
+            account_id = resolver.get_account_id_for_conversation(conversation_id)
+        if account_id is None:
+            raise Exception('conversation with `id` %d does not exist' % conversation_id)
+
+        with open_db(DATABASE_URL, account_id=account_id) as db:
             result = db.get_conversation(conversation_id)
 
             if not result:
