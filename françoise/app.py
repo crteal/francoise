@@ -38,6 +38,20 @@ LOGIN_FORM = """<!DOCTYPE html>
 </html>
 """
 
+SIGNUP_FORM = """<!DOCTYPE html>
+<html lang="en">
+<body>
+    <form method="post" action="/signup">
+        <input type="text" name="name" required>
+        <input type="email" name="email" required>
+        <input type="password" name="password" required>
+        <label><input type="checkbox" name="over_18" value="yes"> I am 18 or older</label>
+        <button type="submit">Sign up</button>
+    </form>
+</body>
+</html>
+"""
+
 
 def reply_fragment(conversation_id: int, message: str) -> str:
     # OOB fragment that appends a reply to an open conversation's messages.
@@ -174,6 +188,30 @@ def App(**kwargs):
         response.set_cookie('session', session_id, httponly=True)
 
         return 'Logged in.'
+
+    @app.get('/signup', response_class=HTMLResponse)
+    def signup_form() -> str:
+        return SIGNUP_FORM
+
+    @app.post('/signup', response_class=HTMLResponse)
+    def signup(
+            name: Annotated[str, Form()],
+            email: Annotated[str, Form()],
+            password: Annotated[str, Form()],
+            response: Response,
+            over_18: Annotated[Optional[str], Form()] = None) -> str:
+        # Self-attested age gate: keep the product adults-only at launch.
+        if over_18 != 'yes':
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return 'You must be 18 or older to sign up.'
+
+        password_hash = PasswordHasher().hash(password)
+        with open_db(DATABASE_URL) as db:
+            account = db.create_account(name)
+        with open_db(DATABASE_URL, account_id=account[0]) as db:
+            db.create_user(name, email, password_hash)
+
+        return 'Signed up.'
 
     def require_session(session: Annotated[Optional[str], Cookie()] = None):
         if session is not None:
