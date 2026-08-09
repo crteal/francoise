@@ -1,12 +1,31 @@
 from collections.abc import Sequence
+import os
 import litellm
 import requests
+
+
+def get_secret(credential_ref: str) -> str:
+    """Resolve a credential reference to its key from the environment.
+
+    Keeps keys out of database rows: a row holds only the reference, and the
+    key lives in the secret store (the environment) read at call time.
+    """
+    key = os.environ.get(credential_ref)
+    if not key:
+        raise Exception('secret for `%s` is unspecified' % credential_ref)
+    return key
 
 
 class Provider:
     """Thin seam over LiteLLM so we can reach many model hosts through one interface."""
 
-    def chat(self, messages: Sequence[dict[str, str]], **kwargs) -> str:
+    def chat(
+            self,
+            messages: Sequence[dict[str, str]],
+            credential_ref: str = None,
+            **kwargs) -> str:
+        if credential_ref is not None:
+            kwargs['api_key'] = get_secret(credential_ref)
         response = litellm.completion(messages=list(messages), **kwargs)
         return response.choices[0].message.content
 
