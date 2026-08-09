@@ -131,7 +131,7 @@ def App(**kwargs):
             conversation = db.conversation_to_dict(result)
 
             user_email = conversation.get('user_email')
-            if sender not in user_email:
+            if sender != user_email:
                 raise Exception('invalid user email `%s` for conversation %d' % (user_email, conversation_id))
 
         response = handle_inbound(conversation_id, message)
