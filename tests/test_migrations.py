@@ -6,9 +6,11 @@ import unittest
 from alembic import command
 from alembic.config import Config
 
+from françoise.db import open_db
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SCHEMA_TABLES = {'users', 'agents', 'conversations', 'messages'}
+SCHEMA_TABLES = {'accounts', 'users', 'agents', 'conversations', 'messages'}
 
 
 def existing_tables(db_path):
@@ -46,6 +48,15 @@ class TestMigrations(unittest.TestCase):
         command.upgrade(self.config, 'head')
         command.downgrade(self.config, 'base')
         self.assertEqual(SCHEMA_TABLES & existing_tables(self.db_path), set())
+
+    def test_insert_and_read_account(self):
+        command.upgrade(self.config, 'head')
+        with open_db(self.db_path) as db:
+            created = db.create_account('Acme')
+            read = db.get_account(created[0])
+        self.assertEqual(read[0], created[0])
+        self.assertEqual(read[1], 'Acme')
+        self.assertTrue(read[2])
 
 
 if __name__ == '__main__':
