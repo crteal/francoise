@@ -1,0 +1,12 @@
+[
+  {
+    "turns": ["My dog is named Milou.", "What is my dog's name?"],
+    "expected": "Milou",
+    "forbidden": "Idefix"
+  },
+  {
+    "turns": ["I work as a baker.", "What is my job?"],
+    "expected": "baker",
+    "forbidden": "teacher"
+  }
+]
