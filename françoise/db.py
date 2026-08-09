@@ -247,7 +247,9 @@ class Database:
                 agent.name AS agent_name,
                 agent.language AS agent_language,
                 agent.proficiency AS agent_proficiency,
-                agent.prompt AS agent_prompt
+                agent.prompt AS agent_prompt,
+                agent.timezone AS timezone,
+                agent.age AS age
             FROM conversations conversation
             JOIN users user
             ON conversation.user_id = user.id
@@ -269,7 +271,9 @@ class Database:
                          'agent_name',
                          'agent_language',
                          'agent_proficiency',
-                         'agent_prompt'),
+                         'agent_prompt',
+                         'timezone',
+                         'age'),
                     conversation))
 
     def get_messages_by_conversation(self, conversation_id: int):

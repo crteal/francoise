@@ -24,6 +24,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from .core import handle_inbound, stream_inbound
 from .db import open_db
 from .mail import parse_conversation_id_from_headers, send_mail
+from .presence import is_free
 
 LOGIN_FORM = """<!DOCTYPE html>
 <html lang="en">
@@ -192,9 +193,25 @@ def App(**kwargs):
 
         return StreamingResponse(events(), media_type='text/event-stream')
 
+    def get_agent(conversation_id: int) -> dict:
+        # The persona fields presence reads (timezone/age) ride on the
+        # conversation dict; absent ones fall back to UTC/adult in presence.
+        with open_db(DATABASE_URL) as resolver:
+            account_id = resolver.get_account_id_for_conversation(conversation_id)
+        with open_db(DATABASE_URL, account_id=account_id) as db:
+            return db.conversation_to_dict(db.get_conversation(conversation_id))
+
+    async def wait_until_free(agent: dict, poll: float = 60.0) -> None:
+        # Hold here while the persona is asleep/at school; wake in the next
+        # free window. Re-checks presence each poll against the moving clock.
+        while not is_free(agent):
+            await asyncio.sleep(poll)
+
     async def reply_and_push(user_id: int, conversation_id: int, message: str) -> None:
         # Stream the reply through the core and push each chunk to the user's
-        # channel so the browser shows the reply as it arrives.
+        # channel so the browser shows the reply as it arrives. Hold the reply
+        # until the persona is free (not asleep or at school).
+        await wait_until_free(get_agent(conversation_id))
         channel = get_channel(user_id)
         chunks = stream_inbound(conversation_id, message)
         sentinel = object()
