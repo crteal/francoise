@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from françoise.app import App
 from françoise.db import open_db
+from françoise.migrate import upgrade_to_head
 
 
 class TestMailgunRoute(unittest.TestCase):
@@ -14,8 +15,8 @@ class TestMailgunRoute(unittest.TestCase):
         fd, self.db_path = tempfile.mkstemp(suffix='.db')
         os.close(fd)
 
+        upgrade_to_head(self.db_path)
         with open_db(self.db_path) as db:
-            db.create_schema()
             user = db.create_user('Alice', 'alice@example.com', 'salt', 'password')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation = db.create_conversation(

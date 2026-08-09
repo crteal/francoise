@@ -61,28 +61,9 @@ for table in tables:
     tables_by_name[table[0]] = table
 
 
-def table_definition_to_create_statement(definition: tuple) -> str:
-    columns = ', '.join(list(map(lambda col: ' '.join(col), definition[1])))
-
-    constraints = ''
-    if len(definition) == 3:
-        constraints = ', %s' % (', '.join(definition[2]),)
-
-    return 'CREATE TABLE IF NOT EXISTS {table_name} ({columns}{constraints});'.format(
-            table_name=definition[0],
-            columns=columns,
-            constraints=constraints)
-
-
 class Database:
     def __init__(self, connection):
         self.connection = connection
-
-    def create_schema(self):
-        with self.connection:
-            # NOTE it didn't look like we could create tables in one go
-            for sql in list(map(table_definition_to_create_statement, tables)):
-                self.connection.execute(sql)
 
     def delete_schema(self):
         for table_name in tables_by_name.keys():
