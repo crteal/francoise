@@ -2,6 +2,7 @@ import shutil
 import tempfile
 import unittest
 from datetime import date
+from unittest.mock import patch
 
 from françoise.graph import open_graph
 from françoise.signals import (
@@ -224,6 +225,41 @@ class TestContact(unittest.TestCase):
 
         self.assertEqual(text, '')
         self.assertEqual(sent, [])
+
+    def test_nothing_is_sent_at_a_sleep_time(self):
+        signal = {'topic': 'cinema', 'place': 'Paris', 'note': 'a new film'}
+        event = 'I went to see the new film in Paris.'
+        model = lambda persona, past, s: event
+        sent = []
+        # 02:00 UTC: the child persona is asleep, so outreach holds.
+        agent = {'timezone': 'UTC', 'age': 10}
+        with open_graph(self.path) as graph, \
+                patch('françoise.signals.is_free', return_value=False):
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+            grounded = ground_signals(graph, 1, [signal])
+
+            text = contact(graph, 1, grounded[0], send=sent.append,
+                           model=model, agent=agent)
+
+        self.assertEqual(text, '')
+        self.assertEqual(sent, [])
+
+    def test_sends_in_a_free_window(self):
+        signal = {'topic': 'cinema', 'place': 'Paris', 'note': 'a new film'}
+        event = 'I went to see the new film in Paris.'
+        model = lambda persona, past, s: event
+        sent = []
+        agent = {'timezone': 'UTC', 'age': 10}
+        with open_graph(self.path) as graph, \
+                patch('françoise.signals.is_free', return_value=True):
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+            grounded = ground_signals(graph, 1, [signal])
+
+            text = contact(graph, 1, grounded[0], send=sent.append,
+                           model=model, agent=agent)
+
+        self.assertEqual(text, event)
+        self.assertEqual(sent, [event])
 
 
 if __name__ == '__main__':

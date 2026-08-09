@@ -9,6 +9,8 @@ from datetime import date, datetime
 
 import requests
 
+from .presence import is_free
+
 OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast'
 
 # ponytail: fixed-date holidays only; add a lib (e.g. `holidays`) if moving
@@ -142,16 +144,22 @@ def synthesize(graph, agent_id: int, signal: dict, model=default_model) -> str:
 
 
 def contact(graph, agent_id: int, signal: dict, send,
-            model=default_model) -> str:
+            model=default_model, agent: dict = None) -> str:
     """Reach out about a grounded signal, in character, through a medium.
 
     Synthesizes a first-person event from the signal (Task 39) and sends it as
     the opening message through `send`, the agent's active medium (e.g. a bound
     `send_mail`) — the conversation-starter path, now graph-driven. The event
     text is already the persona's own life, so it is the message. Returns the
-    text sent, or '' when synthesis drafts nothing (so nothing is sent). `send`
-    and `model` are injected so the outreach stays testable.
+    text sent, or '' when synthesis drafts nothing (so nothing is sent).
+
+    Outreach only lands in a persona's waking hours: when `agent` (its
+    persona dict, carrying `timezone`/`age`) is given and the persona is not
+    free (asleep or at school), nothing is sent. `send`, `model`, and `agent`
+    are injected so the outreach stays testable.
     """
+    if agent is not None and not is_free(agent):
+        return ''
     text = synthesize(graph, agent_id, signal, model=model)
     if not text:
         return ''
