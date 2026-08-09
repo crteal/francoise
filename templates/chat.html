@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/htmx-ext-sse@2"></script>
 </head>
 <body hx-ext="sse" sse-connect="/stream">
-    <p><a href="/">Back</a></p>
+    <p><a href="/">Back</a> | <a href="/c/{{ conversation.id }}/settings">Settings</a></p>
     <h1>
         {{ conversation.agent_name }}
         <span id="presence-{{ conversation.id }}">{{ presence }}</span>

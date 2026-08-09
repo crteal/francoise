@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Settings — {{ conversation.agent_name }}</title>
+</head>
+<body>
+    <p><a href="/c/{{ conversation.id }}">Back</a></p>
+    <h1>Settings — {{ conversation.agent_name }}</h1>
+    {% if error %}<p>{{ error }}</p>{% endif %}
+    <form method="post" action="/c/{{ conversation.id }}/settings">
+        <label>Proficiency
+            <select name="proficiency" required>
+                {% for level in cefr_levels %}
+                <option value="{{ level }}"{% if level == conversation.user_proficiency %} selected{% endif %}>{{ level }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Model
+            <input type="text" name="model" value="{{ conversation.model }}" required>
+        </label>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>
