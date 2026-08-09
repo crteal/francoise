@@ -34,18 +34,35 @@ tables = [
     ),
 
     (
+        'model_configs',
+        [
+            ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
+            ('dialect', 'TEXT'),
+            ('host', 'TEXT'),
+            ('endpoint', 'TEXT'),
+            ('model_id', 'TEXT NOT NULL'),
+            ('params', 'TEXT'),
+            ('credential_ref', 'TEXT')
+        ],
+        [
+            'UNIQUE(model_id)'
+        ]
+    ),
+
+    (
         'conversations',
         [
             ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
             ('user_id', 'INTEGER NOT NULL'),
             ('agent_id', 'INTEGER NOT NULL'),
-            ('model', 'TEXT NOT NULL'),
+            ('model_config_id', 'INTEGER NOT NULL'),
             ('proficiency', 'TEXT NOT NULL')
         ],
         [
-            'UNIQUE(model, user_id, agent_id)',
+            'UNIQUE(model_config_id, user_id, agent_id)',
             'FOREIGN KEY(user_id) REFERENCES users(id)',
-            'FOREIGN KEY(agent_id) REFERENCES agents(id)'
+            'FOREIGN KEY(agent_id) REFERENCES agents(id)',
+            'FOREIGN KEY(model_config_id) REFERENCES model_configs(id)'
         ]
     ),
 
@@ -201,6 +218,16 @@ class Database:
             self.connection.execute(
                 "DELETE FROM sessions WHERE id = ?", (id,))
 
+    def upsert_model_config(self, model_id: str) -> int:
+        # Reuse a config for the same model string rather than duplicating it.
+        with self.connection:
+            self.connection.execute(
+                "INSERT OR IGNORE INTO model_configs (model_id) VALUES (?)",
+                (model_id,))
+        res = self.connection.execute(
+            "SELECT id FROM model_configs WHERE model_id = ?", (model_id,))
+        return res.fetchone()[0]
+
     def create_conversation(
             self,
             user_id: int,
@@ -212,7 +239,7 @@ class Database:
                 user_id=user_id,
                 agent_id=agent_id,
                 proficiency=proficiency,
-                model=model)
+                model_config_id=self.upsert_model_config(model))
 
     def create_message(self, conversation_id: int, role: str, content: str):
         # messages are scoped through their conversation's account
@@ -238,7 +265,7 @@ class Database:
         res = self.connection.execute("""
             SELECT
                 conversation.id,
-                conversation.model,
+                model_config.model_id AS model,
                 conversation.user_id,
                 user.email AS user_email,
                 user.name AS user_name,
@@ -255,6 +282,8 @@ class Database:
             ON conversation.user_id = user.id
             JOIN agents agent
             ON conversation.agent_id = agent.id
+            JOIN model_configs model_config
+            ON conversation.model_config_id = model_config.id
             WHERE conversation.id = ?
             AND conversation.account_id = ?
         """, (id, self.require_account()))
