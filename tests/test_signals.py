@@ -8,9 +8,17 @@ from françoise.signals import (
     calendar_signal,
     ground_signals,
     region_signals,
+    synthesize,
     weather_signal,
 )
-from françoise.vocab import FR_PREDICATES, GRAPHS, place_iri
+from françoise.vocab import (
+    FR_PREDICATES,
+    GRAPHS,
+    SCHEMA_PREDICATES,
+    agent_iri,
+    event_iri,
+    place_iri,
+)
 
 
 class _Resp:
@@ -127,6 +135,59 @@ class TestGroundSignals(unittest.TestCase):
             grounded = ground_signals(graph, 1, [matching, non_matching])
 
         self.assertEqual(grounded, [matching])
+
+
+class TestSynthesize(unittest.TestCase):
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.path)
+
+    def test_asserts_a_synthetic_event_linked_to_the_world_signal(self):
+        signal = {'topic': 'cinema', 'place': 'Paris', 'note': 'a new film'}
+        model = lambda persona, past, s: 'I went to see the new film.'
+        synthetic = GRAPHS['synthetic']
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+            grounded = ground_signals(graph, 1, [signal])
+
+            text = synthesize(graph, 1, grounded[0], model=model)
+
+            self.assertEqual(text, 'I went to see the new film.')
+            event = event_iri(text)
+            # The synthetic graph holds the event with its first-person text.
+            self.assertTrue(bool(graph.query(
+                'ASK { GRAPH <%s> { <%s> <%s> "%s" } }'
+                % (synthetic, event, SCHEMA_PREDICATES['name'], text))))
+            # The event links to its world signal (the region's world node).
+            self.assertTrue(bool(graph.query(
+                'ASK { GRAPH <%s> { <%s> <%s> <%s> } }'
+                % (synthetic, event, SCHEMA_PREDICATES['mentions'],
+                   place_iri('Paris')))))
+            # The agent owns the event.
+            self.assertTrue(bool(graph.query(
+                'ASK { GRAPH <%s> { <%s> <%s> <%s> } }'
+                % (synthetic, agent_iri(1), SCHEMA_PREDICATES['mentions'],
+                   event))))
+
+    def test_conflict_is_not_reasserted(self):
+        signal = {'topic': 'cinema', 'place': 'Paris'}
+        model = lambda persona, past, s: 'I went to see the new film.'
+        synthetic = GRAPHS['synthetic']
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+
+            first = synthesize(graph, 1, signal, model=model)
+            second = synthesize(graph, 1, signal, model=model)
+
+            self.assertEqual(first, 'I went to see the new film.')
+            self.assertEqual(second, '')
+            # The event is held once, not duplicated.
+            rows = list(graph.query(
+                'SELECT ?e WHERE { GRAPH <%s> { ?e <%s> ?t } }'
+                % (synthetic, SCHEMA_PREDICATES['name'])))
+            self.assertEqual(len(rows), 1)
 
 
 if __name__ == '__main__':

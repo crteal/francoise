@@ -67,3 +67,8 @@ def message_iri(message_id: int) -> str:
 def place_iri(place: str) -> str:
     """The IRI for a place (a region) node."""
     return FR + 'place/' + quote(place.strip().lower(), safe='')
+
+
+def event_iri(text: str) -> str:
+    """The IRI for a synthetic event node, minted from its text."""
+    return FR + 'event/' + quote(text.strip().lower(), safe='')
