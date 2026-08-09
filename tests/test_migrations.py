@@ -88,6 +88,30 @@ class TestMigrations(unittest.TestCase):
         finally:
             connection.close()
 
+    def test_iri_columns_match_id_pattern(self):
+        command.upgrade(self.config, 'head')
+        connection = sqlite3.connect(self.db_path)
+        try:
+            user_id = connection.execute(
+                "INSERT INTO users (name, email, salt, password) "
+                "VALUES ('u', 'u@x', 's', 'p') RETURNING id"
+            ).fetchone()[0]
+            agent_id = connection.execute(
+                "INSERT INTO agents (name, language, proficiency, prompt) "
+                "VALUES ('a', 'fr', 'novice', 'p') RETURNING id"
+            ).fetchone()[0]
+            connection.commit()
+            user_iri = connection.execute(
+                "SELECT iri FROM users WHERE id = ?", (user_id,)
+            ).fetchone()[0]
+            agent_iri = connection.execute(
+                "SELECT iri FROM agents WHERE id = ?", (agent_id,)
+            ).fetchone()[0]
+        finally:
+            connection.close()
+        self.assertEqual(user_iri, 'urn:francoise:user:%d' % user_id)
+        self.assertEqual(agent_iri, 'urn:francoise:agent:%d' % agent_id)
+
 
 if __name__ == '__main__':
     unittest.main()
