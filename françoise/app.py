@@ -261,8 +261,38 @@ def App(**kwargs):
                 headers={'Location': '/login'})
 
     @app.get('/', response_class=HTMLResponse)
-    def home(session=Depends(require_session)) -> str:
-        return 'Welcome.'
+    def home(request: Request, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            rows = db.list_conversations(session[1])
+        conversations = []
+        for id, agent_name, tz, age in rows:
+            agent = {'timezone': tz, 'age': age}
+            conversations.append({
+                'id': id,
+                'agent_name': agent_name,
+                'presence': '%s %s' % (
+                    presence_label(agent), presence_local_time(agent)),
+            })
+        return TEMPLATES.TemplateResponse(
+            request, 'chat_list.html', {'conversations': conversations})
+
+    @app.get('/c/{id}', response_class=HTMLResponse)
+    def chat(request: Request, id: int, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            row = db.get_conversation(id)
+            if row is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            conversation = db.conversation_to_dict(row)
+            messages = [
+                {'role': r, 'content': c}
+                for r, c in db.get_messages_by_conversation(id)]
+        presence = '%s %s' % (
+            presence_label(conversation), presence_local_time(conversation))
+        return TEMPLATES.TemplateResponse(
+            request, 'chat.html',
+            {'conversation': conversation,
+             'messages': messages,
+             'presence': presence})
 
     @app.get('/agents', response_class=HTMLResponse)
     def list_agents(request: Request, session=Depends(require_session)):

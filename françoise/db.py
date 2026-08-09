@@ -329,6 +329,24 @@ class Database:
         """, (id, self.require_account()))
         return res.fetchone()
 
+    def list_conversations(self, user_id: int) -> list:
+        # Account-scoped list for the chat dashboard: one row per conversation
+        # with the persona name plus the timezone/age presence reads.
+        res = self.connection.execute("""
+            SELECT
+                conversation.id,
+                agent.name AS agent_name,
+                agent.timezone AS timezone,
+                agent.age AS age
+            FROM conversations conversation
+            JOIN agents agent
+            ON conversation.agent_id = agent.id
+            WHERE conversation.user_id = ?
+            AND conversation.account_id = ?
+            ORDER BY conversation.id
+        """, (user_id, self.require_account()))
+        return res.fetchall()
+
     def conversation_to_dict(self, conversation: tuple) -> dict[str, str]:
         return dict(zip(('id',
                          'model',
