@@ -10,6 +10,7 @@ from françoise.vocab import (
     agent_iri,
     entity_iri,
     message_iri,
+    place_iri,
     topic_iri,
 )
 
@@ -115,6 +116,19 @@ class Graph:
                 % (real, iri, SCHEMA_PREDICATES['name']))):
             self.assert_quad(
                 iri, SCHEMA_PREDICATES['name'], name, graph=real, literal=True)
+
+    def assert_signal(self, region: str, signal: dict):
+        """Assert a world signal into the `world` graph, keyed by region.
+
+        Links the region's place node to a `signal` literal rendering the
+        signal dict, so the graph holds each real-world fact fetched for a
+        region (e.g. its weather or calendar).
+        """
+        summary = ' '.join(
+            '%s=%s' % (key, signal[key]) for key in sorted(signal))
+        self.assert_quad(
+            place_iri(region), FR_PREDICATES['signal'], summary,
+            graph=GRAPHS['world'], literal=True)
 
     def seed_persona(self, agent_id: int, name: str, interests=()):
         """Write an agent's persona facts into the `real` graph: its own

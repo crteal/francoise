@@ -29,6 +29,7 @@ FR_PREDICATES = {
     'enjoys': FR + 'enjoys',
     'practices': FR + 'practices',
     'learning': FR + 'learning',
+    'signal': FR + 'signal',
 }
 
 # Every predicate that may appear in a quad, keyed by its full IRI.
@@ -61,3 +62,8 @@ def entity_iri(name: str) -> str:
 def message_iri(message_id: int) -> str:
     """The IRI for a source message node."""
     return FR + 'message/%d' % message_id
+
+
+def place_iri(place: str) -> str:
+    """The IRI for a place (a region) node."""
+    return FR + 'place/' + quote(place.strip().lower(), safe='')
