@@ -10,7 +10,7 @@ if __name__ == '__main__' and __package__ is None:
     sys.path.append(PARENT_DIR)
 
 from dotenv import load_dotenv
-from françoise.db import open_db
+from françoise.migrate import upgrade_to_head
 
 load_dotenv()
 
@@ -21,5 +21,4 @@ parser.add_argument("-db", "--database", type=str, default=os.environ.get('DATAB
 
 args = parser.parse_args()
 
-with open_db(args.database) as db:
-    db.create_schema()
+upgrade_to_head(args.database)

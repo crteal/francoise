@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from françoise.core import handle_inbound
 from françoise.db import open_db
+from françoise.migrate import upgrade_to_head
 
 
 class TestCore(unittest.TestCase):
@@ -13,8 +14,8 @@ class TestCore(unittest.TestCase):
         os.close(fd)
         os.environ['DATABASE_URL'] = self.db_path
 
+        upgrade_to_head(self.db_path)
         with open_db(self.db_path) as db:
-            db.create_schema()
             user = db.create_user('Alice', 'alice@example.com', 'salt', 'password')
             agent = db.create_agent('Boku', 'French', 'A1', 'You are {agent_name}.')
             self.conversation = db.create_conversation(
