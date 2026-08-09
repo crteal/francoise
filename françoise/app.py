@@ -15,10 +15,11 @@ from fastapi import (
     FastAPI,
     Form,
     HTTPException,
+    Request,
     Response,
     status,
 )
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 from .core import handle_inbound
 from .db import open_db
@@ -164,6 +165,20 @@ def App(**kwargs):
     @app.get('/', response_class=HTMLResponse)
     def home(session=Depends(require_session)) -> str:
         return 'Welcome.'
+
+    @app.get('/stream')
+    async def stream(request: Request, session=Depends(require_session)):
+        channel = get_channel(session[1])
+
+        async def events():
+            while not await request.is_disconnected():
+                try:
+                    event = await asyncio.wait_for(channel.get(), timeout=1)
+                except asyncio.TimeoutError:
+                    continue
+                yield 'data: %s\n\n' % event
+
+        return StreamingResponse(events(), media_type='text/event-stream')
 
     @app.post('/c/{id}/message', response_class=HTMLResponse)
     def post_message(
