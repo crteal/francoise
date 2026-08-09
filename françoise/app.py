@@ -1,12 +1,29 @@
 import os
 import re
+import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import BackgroundTasks, FastAPI, Form, Response, status
+from fastapi.responses import HTMLResponse
 
 from .core import handle_inbound
 from .db import open_db
 from .mail import parse_conversation_id_from_headers, send_mail
+
+LOGIN_FORM = """<!DOCTYPE html>
+<html lang="en">
+<body>
+    <form method="post" action="/login">
+        <input type="email" name="email" required>
+        <input type="password" name="password" required>
+        <button type="submit">Log in</button>
+    </form>
+</body>
+</html>
+"""
 
 
 def get_config(
@@ -77,6 +94,35 @@ def App(**kwargs):
     def heartbeat(api_key: str, response: Response) -> None:
         if api_key != SERVER_API_KEY:
             response.status_code = status.HTTP_401_UNAUTHORIZED
+
+    @app.get('/login', response_class=HTMLResponse)
+    def login_form() -> str:
+        return LOGIN_FORM
+
+    @app.post('/login', response_class=HTMLResponse)
+    def login(
+            email: Annotated[str, Form()],
+            password: Annotated[str, Form()],
+            response: Response) -> str:
+        with open_db(DATABASE_URL) as db:
+            user = db.get_user_by_email(email)
+
+        if user is not None:
+            try:
+                PasswordHasher().verify(user[3], password)
+            except VerifyMismatchError:
+                user = None
+
+        if user is None:
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            return 'Invalid email or password.'
+
+        session_id = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        with open_db(DATABASE_URL) as db:
+            db.create_session(session_id, user[0], expires_at.isoformat())
+
+        return 'Logged in.'
 
     @app.post('/mailgun', status_code=200)
     async def mailgun(
