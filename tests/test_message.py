@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -39,10 +40,11 @@ class TestMessageRoute(unittest.TestCase):
     def tearDown(self):
         os.remove(self.db_path)
 
-    def test_post_message_echoes_calls_core_and_pushes_reply(self):
+    def test_post_message_echoes_calls_core_and_streams_reply(self):
         conversation_id = self.conversation[0]
 
-        with patch('françoise.app.handle_inbound', return_value='Salut !') as mock_core:
+        with patch('françoise.app.stream_inbound',
+                   return_value=iter(['Sa', 'lut', ' !'])) as mock_core:
             response = self.client.post(
                 '/c/%d/message' % conversation_id,
                 data={'message': 'Bonjour'})
@@ -52,14 +54,22 @@ class TestMessageRoute(unittest.TestCase):
         self.assertIn('Bonjour', response.text)
         self.assertIn('<div>', response.text)
 
-        # the web path runs the core with the posted message
+        # the web path streams the reply through the core
         mock_core.assert_called_once_with(conversation_id, 'Bonjour')
 
-        # the reply reaches the user's channel as an OOB fragment
+        # each chunk reaches the user's channel as its own OOB fragment
         channel = self.app.state.get_channel(self.user[0])
-        fragment = channel.get_nowait()
-        self.assertIn('id="messages-%d"' % conversation_id, fragment)
-        self.assertIn('Salut !', fragment)
+        fragments = []
+        while not channel.empty():
+            fragments.append(channel.get_nowait())
+
+        self.assertEqual(len(fragments), 3)
+        for fragment in fragments:
+            self.assertIn('id="messages-%d"' % conversation_id, fragment)
+        self.assertEqual(
+            ''.join(re.search(r'<div>(.*)</div></div>', f).group(1)
+                    for f in fragments),
+            'Salut !')
 
 
 if __name__ == '__main__':

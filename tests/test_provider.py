@@ -19,6 +19,23 @@ class TestProvider(unittest.TestCase):
         mock_completion.assert_called_once_with(
             messages=messages, model='ollama/llama3')
 
+    @patch('françoise.chat.litellm.completion')
+    def test_stream_yields_content_chunks(self, mock_completion):
+        def delta(content):
+            return SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content=content))])
+
+        # a trailing None delta (finish chunk) is skipped
+        mock_completion.return_value = iter(
+            [delta('Bon'), delta('jour'), delta(None)])
+
+        messages = [{'role': 'user', 'content': 'Hello'}]
+        chunks = list(Provider().stream(messages, model='ollama/llama3'))
+
+        self.assertEqual(chunks, ['Bon', 'jour'])
+        mock_completion.assert_called_once_with(
+            messages=messages, stream=True, model='ollama/llama3')
+
     @patch.dict(os.environ, {'OPENAI_CRED': 'sk-secret'})
     @patch('françoise.chat.litellm.completion')
     def test_chat_reads_key_by_reference(self, mock_completion):

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 import os
 import litellm
 import requests
@@ -28,6 +28,21 @@ class Provider:
             kwargs['api_key'] = get_secret(credential_ref)
         response = litellm.completion(messages=list(messages), **kwargs)
         return response.choices[0].message.content
+
+    def stream(
+            self,
+            messages: Sequence[dict[str, str]],
+            credential_ref: str = None,
+            **kwargs) -> Iterator[str]:
+        """Yield the reply as a uniform iterator of content chunks."""
+        if credential_ref is not None:
+            kwargs['api_key'] = get_secret(credential_ref)
+        response = litellm.completion(
+            messages=list(messages), stream=True, **kwargs)
+        for chunk in response:
+            content = chunk.choices[0].delta.content
+            if content:
+                yield content
 
 
 def message_tuple_to_dict(values: tuple[str, str]):

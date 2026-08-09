@@ -21,7 +21,7 @@ from fastapi import (
 )
 from fastapi.responses import HTMLResponse, StreamingResponse
 
-from .core import handle_inbound
+from .core import handle_inbound, stream_inbound
 from .db import open_db
 from .mail import parse_conversation_id_from_headers, send_mail
 
@@ -193,9 +193,16 @@ def App(**kwargs):
         return StreamingResponse(events(), media_type='text/event-stream')
 
     async def reply_and_push(user_id: int, conversation_id: int, message: str) -> None:
-        # Generate the reply with the core, then push it to the user's channel.
-        reply = await asyncio.to_thread(handle_inbound, conversation_id, message)
-        await get_channel(user_id).put(reply_fragment(conversation_id, reply))
+        # Stream the reply through the core and push each chunk to the user's
+        # channel so the browser shows the reply as it arrives.
+        channel = get_channel(user_id)
+        chunks = stream_inbound(conversation_id, message)
+        sentinel = object()
+        while True:
+            chunk = await asyncio.to_thread(next, chunks, sentinel)
+            if chunk is sentinel:
+                break
+            await channel.put(reply_fragment(conversation_id, chunk))
 
     @app.post('/c/{id}/message', response_class=HTMLResponse)
     def post_message(
