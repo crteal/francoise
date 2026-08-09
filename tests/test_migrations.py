@@ -58,6 +58,36 @@ class TestMigrations(unittest.TestCase):
         self.assertEqual(read[1], 'Acme')
         self.assertTrue(read[2])
 
+    def test_account_scope_columns_and_foreign_keys(self):
+        command.upgrade(self.config, 'head')
+        connection = sqlite3.connect(self.db_path)
+        connection.execute("PRAGMA foreign_keys = ON")
+        try:
+            account_id = connection.execute(
+                "INSERT INTO accounts (name, created_at) VALUES ('Acme', 'now') RETURNING id"
+            ).fetchone()[0]
+            for table, columns in (
+                ('users', "name, email, salt, password, account_id"),
+                ('agents', "name, language, proficiency, prompt, account_id"),
+            ):
+                values = ['x'] * (len(columns.split(',')) - 1)
+                placeholders = ','.join(['?'] * len(values) + ['?'])
+                # a valid account_id succeeds
+                connection.execute(
+                    "INSERT INTO %s (%s) VALUES (%s)" % (table, columns, placeholders),
+                    values + [account_id],
+                )
+                connection.commit()
+                # a bad account_id fails the foreign key constraint
+                with self.assertRaises(sqlite3.IntegrityError):
+                    connection.execute(
+                        "INSERT INTO %s (%s) VALUES (%s)" % (table, columns, placeholders),
+                        values + [999999],
+                    )
+                    connection.commit()
+        finally:
+            connection.close()
+
 
 if __name__ == '__main__':
     unittest.main()
