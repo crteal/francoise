@@ -6,7 +6,16 @@ from typing import Annotated, Optional
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from fastapi import BackgroundTasks, FastAPI, Form, Response, status
+from fastapi import (
+    BackgroundTasks,
+    Cookie,
+    Depends,
+    FastAPI,
+    Form,
+    HTTPException,
+    Response,
+    status,
+)
 from fastapi.responses import HTMLResponse
 
 from .core import handle_inbound
@@ -122,7 +131,23 @@ def App(**kwargs):
         with open_db(DATABASE_URL) as db:
             db.create_session(session_id, user[0], expires_at.isoformat())
 
+        response.set_cookie('session', session_id, httponly=True)
+
         return 'Logged in.'
+
+    def require_session(session: Annotated[Optional[str], Cookie()] = None):
+        if session is not None:
+            with open_db(DATABASE_URL) as db:
+                row = db.get_session(session)
+            if row is not None:
+                return row
+        raise HTTPException(
+                status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+                headers={'Location': '/login'})
+
+    @app.get('/', response_class=HTMLResponse)
+    def home(session=Depends(require_session)) -> str:
+        return 'Welcome.'
 
     @app.post('/mailgun', status_code=200)
     async def mailgun(

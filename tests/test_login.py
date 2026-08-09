@@ -46,6 +46,23 @@ class TestLoginRoutes(unittest.TestCase):
                 (self.user[0],)).fetchone()
         self.assertEqual(row[0], 1)
 
+    def test_login_sets_session_cookie_and_guards_page(self):
+        # No cookie redirects to /login.
+        response = self.client.get('/', follow_redirects=False)
+        self.assertEqual(response.status_code, 307)
+        self.assertEqual(response.headers['location'], '/login')
+
+        # Logging in sets the session cookie.
+        response = self.client.post('/login', data={
+            'email': 'alice@example.com',
+            'password': 'correct horse'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('session', self.client.cookies)
+
+        # A request carrying the cookie reaches the page.
+        response = self.client.get('/', follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+
     def test_wrong_password_shows_error(self):
         response = self.client.post('/login', data={
             'email': 'alice@example.com',
