@@ -141,6 +141,24 @@ def synthesize(graph, agent_id: int, signal: dict, model=default_model) -> str:
     return text
 
 
+def contact(graph, agent_id: int, signal: dict, send,
+            model=default_model) -> str:
+    """Reach out about a grounded signal, in character, through a medium.
+
+    Synthesizes a first-person event from the signal (Task 39) and sends it as
+    the opening message through `send`, the agent's active medium (e.g. a bound
+    `send_mail`) — the conversation-starter path, now graph-driven. The event
+    text is already the persona's own life, so it is the message. Returns the
+    text sent, or '' when synthesis drafts nothing (so nothing is sent). `send`
+    and `model` are injected so the outreach stays testable.
+    """
+    text = synthesize(graph, agent_id, signal, model=model)
+    if not text:
+        return ''
+    send(text)
+    return text
+
+
 if __name__ == '__main__':
     xmas = calendar_signal(date(2026, 12, 25))
     assert xmas['topic'] == 'calendar'
