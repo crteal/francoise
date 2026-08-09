@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import secrets
@@ -53,6 +54,20 @@ def App(**kwargs):
     MAILGUN_API_SENDER = get_config(kwargs, 'MAILGUN_API_SENDER')
     MAILGUN_API_URL = get_config(kwargs, 'MAILGUN_API_URL')
     SERVER_API_KEY = get_config(kwargs, 'SERVER_API_KEY')
+
+    # NOTE one message channel for each user, keyed by user id, so events
+    # route to the right user instead of leaking through a shared queue.
+    # ponytail: plain dict, no eviction; add cleanup when SSE tasks land (#17)
+    channels: dict[int, asyncio.Queue] = {}
+
+    def get_channel(user_id: int) -> asyncio.Queue:
+        channel = channels.get(user_id)
+        if channel is None:
+            channel = channels[user_id] = asyncio.Queue()
+        return channel
+
+    app.state.channels = channels
+    app.state.get_channel = get_channel
 
     def chat_and_reply(
             headers: str,
