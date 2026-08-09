@@ -67,6 +67,29 @@ def calendar_signal(when: date = None) -> dict:
     }
 
 
+def region_signals(graph, region: str, latitude: float, longitude: float,
+                   when: date = None, get=requests.get, cache: dict = None):
+    """Signals for a region, fetched once and asserted into the `world` graph.
+
+    Fetches the weather and calendar signals for a region, asserts each into
+    the graph's `world` graph, and caches them under `region` so a later call
+    for the same region reuses them without hitting the provider again. Two
+    agents in one region therefore share one fetch. `cache` is the per-run
+    memo (a dict), `get` the injected weather provider.
+    """
+    cache = {} if cache is None else cache
+    if region in cache:
+        return cache[region]
+    signals = [
+        weather_signal(latitude, longitude, region, get=get),
+        calendar_signal(when),
+    ]
+    for signal in signals:
+        graph.assert_signal(region, signal)
+    cache[region] = signals
+    return signals
+
+
 if __name__ == '__main__':
     xmas = calendar_signal(date(2026, 12, 25))
     assert xmas['topic'] == 'calendar'

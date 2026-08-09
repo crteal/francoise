@@ -1,7 +1,11 @@
+import shutil
+import tempfile
 import unittest
 from datetime import date
 
-from françoise.signals import calendar_signal, weather_signal
+from françoise.graph import open_graph
+from françoise.signals import calendar_signal, region_signals, weather_signal
+from françoise.vocab import FR_PREDICATES, GRAPHS, place_iri
 
 
 class _Resp:
@@ -58,6 +62,48 @@ class TestCalendarSignal(unittest.TestCase):
         signal = calendar_signal(date(2026, 8, 9))
         self.assertEqual(signal['season'], 'summer')
         self.assertEqual(signal['time'], '2026-08-09')
+
+
+class TestRegionSignals(unittest.TestCase):
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.path)
+
+    def _counting_get(self):
+        calls = []
+
+        def get(*a, **k):
+            calls.append((a, k))
+            return _Resp({'current': {
+                'time': '2026-08-09T12:00',
+                'temperature_2m': 21.3,
+                'weather_code': 1,
+            }})
+
+        return get, calls
+
+    def test_two_agents_in_one_region_share_one_fetch(self):
+        get, calls = self._counting_get()
+        cache = {}
+        with open_graph(self.path) as graph:
+            # Two agents, same region, one shared cache.
+            region_signals(graph, 'Paris', 48.85, 2.35, get=get, cache=cache)
+            region_signals(graph, 'Paris', 48.85, 2.35, get=get, cache=cache)
+
+        self.assertEqual(len(calls), 1)
+
+    def test_world_graph_holds_the_signals(self):
+        get, _ = self._counting_get()
+        with open_graph(self.path) as graph:
+            region_signals(graph, 'Paris', 48.85, 2.35, get=get)
+            rows = list(graph.query(
+                'SELECT ?o WHERE { GRAPH <%s> { <%s> <%s> ?o } }'
+                % (GRAPHS['world'], place_iri('Paris'), FR_PREDICATES['signal'])))
+
+        # Both the weather and calendar signals are held for the region.
+        self.assertEqual(len(rows), 2)
 
 
 if __name__ == '__main__':
