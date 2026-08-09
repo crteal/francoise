@@ -21,6 +21,7 @@ SCHEMA_PREDICATES = {
     'knows': SCHEMA + 'knows',
     'memberOf': SCHEMA + 'memberOf',
     'homeLocation': SCHEMA + 'homeLocation',
+    'mentions': SCHEMA + 'mentions',
 }
 
 # Local fr: predicates.
@@ -50,3 +51,13 @@ def agent_iri(agent_id: int) -> str:
 def topic_iri(interest: str) -> str:
     """The IRI for an interest's topic node."""
     return FR + 'topic/' + quote(interest.strip().lower(), safe='')
+
+
+def entity_iri(name: str) -> str:
+    """A fresh IRI for an entity, minted from its name."""
+    return FR + 'entity/' + quote(name.strip().lower(), safe='')
+
+
+def message_iri(message_id: int) -> str:
+    """The IRI for a source message node."""
+    return FR + 'message/%d' % message_id
