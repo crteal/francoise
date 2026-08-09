@@ -61,6 +61,18 @@ tables = [
         [
             'FOREIGN KEY(conversation_id) REFERENCES conversations(id)'
         ]
+    ),
+
+    (
+        'sessions',
+        [
+            ('id', 'TEXT PRIMARY KEY'),
+            ('user_id', 'INTEGER NOT NULL'),
+            ('expires_at', 'TEXT NOT NULL')
+        ],
+        [
+            'FOREIGN KEY(user_id) REFERENCES users(id)'
+        ]
     )
 ]
 
@@ -159,6 +171,27 @@ class Database:
                 name=name,
                 email=email,
                 password_hash=password_hash)
+
+    def create_session(
+            self,
+            id: str,
+            user_id: int,
+            expires_at: str) -> tuple:
+        return self.table_insert(
+                'sessions',
+                id=id,
+                user_id=user_id,
+                expires_at=expires_at)
+
+    def get_session(self, id: str):
+        res = self.connection.execute(
+            "SELECT id, user_id, expires_at FROM sessions WHERE id = ?", (id,))
+        return res.fetchone()
+
+    def delete_session(self, id: str):
+        with self.connection:
+            self.connection.execute(
+                "DELETE FROM sessions WHERE id = ?", (id,))
 
     def create_conversation(
             self,
