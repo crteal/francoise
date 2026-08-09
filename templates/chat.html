@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ conversation.agent_name }}</title>
+    <script src="https://unpkg.com/htmx.org@2"></script>
+    <script src="https://unpkg.com/htmx-ext-sse@2"></script>
+</head>
+<body hx-ext="sse" sse-connect="/stream">
+    <p><a href="/">Back</a></p>
+    <h1>
+        {{ conversation.agent_name }}
+        <span id="presence-{{ conversation.id }}">{{ presence }}</span>
+    </h1>
+    <div id="messages-{{ conversation.id }}">
+        {% for message in messages %}
+        <div>{{ message.content }}</div>
+        {% endfor %}
+    </div>
+    <form hx-post="/c/{{ conversation.id }}/message"
+          hx-target="#messages-{{ conversation.id }}"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()">
+        <input type="text" name="message" required>
+        <button type="submit">Send</button>
+    </form>
+</body>
+</html>

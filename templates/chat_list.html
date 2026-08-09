@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Conversations</title>
+    <script src="https://unpkg.com/htmx.org@2"></script>
+</head>
+<body>
+    <h1>Conversations</h1>
+    <p><a href="/agents/new">Add a friend</a></p>
+    {% if conversations %}
+    <ul>
+        {% for conversation in conversations %}
+        <li>
+            <a href="/c/{{ conversation.id }}">{{ conversation.agent_name }}</a>
+            <span id="presence-{{ conversation.id }}">{{ conversation.presence }}</span>
+            <span id="unread-{{ conversation.id }}">0</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No conversations yet.</p>
+    {% endif %}
+</body>
+</html>
