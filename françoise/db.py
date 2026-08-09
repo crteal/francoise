@@ -18,8 +18,7 @@ tables = [
              ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
              ('name', 'TEXT NOT NULL'),
              ('email', 'TEXT UNIQUE'),
-             ('salt', 'TEXT NOT NULL'),
-             ('password', 'TEXT NOT NULL')
+             ('password_hash', 'TEXT NOT NULL')
          ]
     ),
 
@@ -154,14 +153,12 @@ class Database:
             self,
             name: str,
             email: str,
-            salt: str,
-            password: str) -> tuple:
+            password_hash: str) -> tuple:
         return self.table_insert(
                 'users',
                 name=name,
                 email=email,
-                salt=salt,
-                password=password)
+                password_hash=password_hash)
 
     def create_conversation(
             self,

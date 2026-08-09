@@ -67,7 +67,7 @@ class TestMigrations(unittest.TestCase):
                 "INSERT INTO accounts (name, created_at) VALUES ('Acme', 'now') RETURNING id"
             ).fetchone()[0]
             for table, columns in (
-                ('users', "name, email, salt, password, account_id"),
+                ('users', "name, email, password_hash, account_id"),
                 ('agents', "name, language, proficiency, prompt, account_id"),
             ):
                 values = ['x'] * (len(columns.split(',')) - 1)
@@ -93,8 +93,8 @@ class TestMigrations(unittest.TestCase):
         connection = sqlite3.connect(self.db_path)
         try:
             user_id = connection.execute(
-                "INSERT INTO users (name, email, salt, password) "
-                "VALUES ('u', 'u@x', 's', 'p') RETURNING id"
+                "INSERT INTO users (name, email, password_hash) "
+                "VALUES ('u', 'u@x', 'p') RETURNING id"
             ).fetchone()[0]
             agent_id = connection.execute(
                 "INSERT INTO agents (name, language, proficiency, prompt) "
@@ -111,6 +111,24 @@ class TestMigrations(unittest.TestCase):
             connection.close()
         self.assertEqual(user_iri, 'urn:francoise:user:%d' % user_id)
         self.assertEqual(agent_iri, 'urn:francoise:agent:%d' % agent_id)
+
+    def test_onboarded_user_stores_argon2id_hash(self):
+        from argon2 import PasswordHasher
+
+        command.upgrade(self.config, 'head')
+        password_hash = PasswordHasher().hash('hunter2')
+        with open_db(self.db_path) as db:
+            account_id = db.create_account('Acme')[0]
+        with open_db(self.db_path, account_id=account_id) as db:
+            db.create_user('U', 'u@x', password_hash)
+        connection = sqlite3.connect(self.db_path)
+        try:
+            stored = connection.execute(
+                "SELECT password_hash FROM users WHERE email = 'u@x'"
+            ).fetchone()[0]
+        finally:
+            connection.close()
+        self.assertTrue(stored.startswith('$argon2id$'))
 
 
 if __name__ == '__main__':
