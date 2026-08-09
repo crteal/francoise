@@ -4,7 +4,12 @@ import unittest
 from datetime import date
 
 from françoise.graph import open_graph
-from françoise.signals import calendar_signal, region_signals, weather_signal
+from françoise.signals import (
+    calendar_signal,
+    ground_signals,
+    region_signals,
+    weather_signal,
+)
 from françoise.vocab import FR_PREDICATES, GRAPHS, place_iri
 
 
@@ -104,6 +109,24 @@ class TestRegionSignals(unittest.TestCase):
 
         # Both the weather and calendar signals are held for the region.
         self.assertEqual(len(rows), 2)
+
+
+class TestGroundSignals(unittest.TestCase):
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.path)
+
+    def test_keeps_only_the_matching_signal(self):
+        matching = {'topic': 'cinema', 'note': 'a new film'}
+        non_matching = {'topic': 'weather', 'note': 'it rains'}
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+
+            grounded = ground_signals(graph, 1, [matching, non_matching])
+
+        self.assertEqual(grounded, [matching])
 
 
 if __name__ == '__main__':

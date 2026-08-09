@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pyoxigraph import DefaultGraph, Literal, NamedNode, Quad, Store
 
 from françoise.vocab import (
+    FR,
     FR_PREDICATES,
     GRAPHS,
     PREDICATES,
@@ -129,6 +130,30 @@ class Graph:
         self.assert_quad(
             place_iri(region), FR_PREDICATES['signal'], summary,
             graph=GRAPHS['world'], literal=True)
+
+    def persona_terms(self, agent_id: int) -> set[str]:
+        """The agent's grounding terms: its interests, home location, and the
+        names of known topics, lowercased.
+
+        Read from the `real` graph, these are the terms a world signal must
+        touch to fit the persona: an interest edge (`enjoys` a named topic),
+        the `homeLocation` name, or any known topic node's name.
+        """
+        real = GRAPHS['real']
+        agent = agent_iri(agent_id)
+        rows = self.query("""
+            SELECT ?name WHERE { GRAPH <%s> {
+                { <%s> <%s> ?t . ?t <%s> ?name }
+                UNION { <%s> <%s> ?h . ?h <%s> ?name }
+                UNION { ?t <%s> ?name . FILTER(STRSTARTS(STR(?t), "%s")) }
+            } }
+        """ % (
+            real,
+            agent, FR_PREDICATES['enjoys'], SCHEMA_PREDICATES['name'],
+            agent, SCHEMA_PREDICATES['homeLocation'], SCHEMA_PREDICATES['name'],
+            SCHEMA_PREDICATES['name'], FR + 'topic/',
+        ))
+        return {r['name'].value.lower() for r in rows}
 
     def seed_persona(self, agent_id: int, name: str, interests=()):
         """Write an agent's persona facts into the `real` graph: its own

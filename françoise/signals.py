@@ -90,6 +90,26 @@ def region_signals(graph, region: str, latitude: float, longitude: float,
     return signals
 
 
+def _signal_terms(signal: dict) -> set[str]:
+    """The lowercased string values of a signal, used to match the persona."""
+    return {
+        str(value).lower()
+        for value in signal.values()
+        if isinstance(value, str)
+    }
+
+
+def ground_signals(graph, agent_id: int, signals) -> list[dict]:
+    """Keep only the signals that fit the agent's persona.
+
+    A signal stays when one of its values matches a persona term: an interest
+    edge, the home location, or a known topic (see `Graph.persona_terms`). A
+    signal that matches nothing drops.
+    """
+    terms = graph.persona_terms(agent_id)
+    return [s for s in signals if _signal_terms(s) & terms]
+
+
 if __name__ == '__main__':
     xmas = calendar_signal(date(2026, 12, 25))
     assert xmas['topic'] == 'calendar'
