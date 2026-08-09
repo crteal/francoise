@@ -112,6 +112,45 @@ class TestMigrations(unittest.TestCase):
         self.assertEqual(user_iri, 'urn:francoise:user:%d' % user_id)
         self.assertEqual(agent_iri, 'urn:francoise:agent:%d' % agent_id)
 
+    def test_conversation_references_model_config(self):
+        command.upgrade(self.config, 'head')
+        connection = sqlite3.connect(self.db_path)
+        connection.execute("PRAGMA foreign_keys = ON")
+        try:
+            self.assertIn('model_configs', existing_tables(self.db_path))
+            config_id = connection.execute(
+                "INSERT INTO model_configs "
+                "(dialect, host, endpoint, model_id, params, credential_ref) "
+                "VALUES ('openai', 'api.example.com', '/v1/chat', 'gpt', '{}', 'ref') "
+                "RETURNING id"
+            ).fetchone()[0]
+            user_id = connection.execute(
+                "INSERT INTO users (name, email, password_hash) "
+                "VALUES ('u', 'u@x', 'p') RETURNING id"
+            ).fetchone()[0]
+            agent_id = connection.execute(
+                "INSERT INTO agents (name, language, proficiency, prompt) "
+                "VALUES ('a', 'fr', 'novice', 'p') RETURNING id"
+            ).fetchone()[0]
+            conversation_id = connection.execute(
+                "INSERT INTO conversations "
+                "(user_id, agent_id, model_config_id, proficiency) "
+                "VALUES (?, ?, ?, 'novice') RETURNING id",
+                (user_id, agent_id, config_id),
+            ).fetchone()[0]
+            connection.commit()
+            model_id = connection.execute(
+                "SELECT model_config.model_id "
+                "FROM conversations conversation "
+                "JOIN model_configs model_config "
+                "ON model_config.id = conversation.model_config_id "
+                "WHERE conversation.id = ?",
+                (conversation_id,),
+            ).fetchone()[0]
+        finally:
+            connection.close()
+        self.assertEqual(model_id, 'gpt')
+
     def test_onboarded_user_stores_argon2id_hash(self):
         from argon2 import PasswordHasher
 
