@@ -192,18 +192,25 @@ def App(**kwargs):
 
         return StreamingResponse(events(), media_type='text/event-stream')
 
+    async def reply_and_push(user_id: int, conversation_id: int, message: str) -> None:
+        # Generate the reply with the core, then push it to the user's channel.
+        reply = await asyncio.to_thread(handle_inbound, conversation_id, message)
+        await get_channel(user_id).put(reply_fragment(conversation_id, reply))
+
     @app.post('/c/{id}/message', response_class=HTMLResponse)
     def post_message(
             id: int,
             message: Annotated[str, Form()],
+            background_tasks: BackgroundTasks,
             session=Depends(require_session)) -> str:
         with open_db(DATABASE_URL) as resolver:
             account_id = resolver.get_account_id_for_conversation(id)
         if account_id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-        with open_db(DATABASE_URL, account_id=account_id) as db:
-            db.add_user_message(id, message)
+        # NOTE handle_inbound persists the user message, so the route no longer
+        # saves it; run it off-thread and stream the reply back over /stream.
+        background_tasks.add_task(reply_and_push, session[1], id, message)
 
         # user message partial for an immediate echo
         return '<div>%s</div>' % html.escape(message)

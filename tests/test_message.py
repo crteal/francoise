@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
@@ -38,22 +39,27 @@ class TestMessageRoute(unittest.TestCase):
     def tearDown(self):
         os.remove(self.db_path)
 
-    def test_post_message_saves_and_returns_partial(self):
+    def test_post_message_echoes_calls_core_and_pushes_reply(self):
         conversation_id = self.conversation[0]
 
-        response = self.client.post(
-            '/c/%d/message' % conversation_id,
-            data={'message': 'Bonjour'})
+        with patch('françoise.app.handle_inbound', return_value='Salut !') as mock_core:
+            response = self.client.post(
+                '/c/%d/message' % conversation_id,
+                data={'message': 'Bonjour'})
 
         self.assertEqual(response.status_code, 200)
-        # response holds the message partial
+        # response holds the immediate user echo partial
         self.assertIn('Bonjour', response.text)
         self.assertIn('<div>', response.text)
 
-        # store has the message
-        with open_db(self.db_path, account_id=1) as db:
-            messages = db.get_messages_by_conversation(conversation_id)
-        self.assertIn(('user', 'Bonjour'), messages)
+        # the web path runs the core with the posted message
+        mock_core.assert_called_once_with(conversation_id, 'Bonjour')
+
+        # the reply reaches the user's channel as an OOB fragment
+        channel = self.app.state.get_channel(self.user[0])
+        fragment = channel.get_nowait()
+        self.assertIn('id="messages-%d"' % conversation_id, fragment)
+        self.assertIn('Salut !', fragment)
 
 
 if __name__ == '__main__':
