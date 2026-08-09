@@ -1,6 +1,6 @@
 import unittest
 
-from françoise.persona import build_persona_prompt
+from françoise.persona import build_persona_prompt, build_prompt
 
 
 class TestPersona(unittest.TestCase):
@@ -34,6 +34,23 @@ class TestPersona(unittest.TestCase):
         prompt = build_persona_prompt({'name': 'Bo'})
         self.assertIn('Bo', prompt)
         self.assertNotIn('Location', prompt)
+
+
+    def test_prompt_holds_messages_and_facts(self):
+        facts = ['Françoise enjoys cinema']
+        messages = [('user', 'bonjour'), ('assistant', 'salut')]
+        prompt = build_prompt(self.agent, facts=facts, messages=messages)
+        # recent messages appear
+        self.assertIn('bonjour', prompt)
+        self.assertIn('salut', prompt)
+        # relevant facts appear
+        self.assertIn('Françoise enjoys cinema', prompt)
+
+    def test_prompt_window_keeps_only_recent_messages(self):
+        messages = [('user', 'm%d' % i) for i in range(30)]
+        prompt = build_prompt(self.agent, messages=messages, window=5)
+        self.assertIn('m29', prompt)
+        self.assertNotIn('m0\n', prompt)
 
 
 if __name__ == '__main__':

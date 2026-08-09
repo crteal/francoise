@@ -29,6 +29,24 @@ def build_persona_prompt(agent: dict) -> str:
     return '\n'.join(lines)
 
 
+def build_prompt(agent: dict, facts=(), messages=(), window: int = 20) -> str:
+    """Assemble the system prompt: persona, relevant facts, and recent turns.
+
+    `facts` are readable fact lines from the graph (recent and topic-relevant);
+    `messages` is the conversation's `(role, content)` history, of which only
+    the last `window` turns form the short-term memory. Both memory sections
+    are trusted context we control, kept out of the user message stream.
+    """
+    parts = [build_persona_prompt(agent)]
+    if facts:
+        parts.append('Facts you remember:\n' + '\n'.join(facts))
+    recent = list(messages)[-window:]
+    if recent:
+        parts.append('Recent conversation:\n' + '\n'.join(
+            '%s: %s' % (role, content) for role, content in recent))
+    return '\n\n'.join(parts)
+
+
 if __name__ == '__main__':
     agent = {
         'name': 'Françoise',

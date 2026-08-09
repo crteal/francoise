@@ -65,5 +65,18 @@ class TestGraph(unittest.TestCase):
                     % (real, agent, FR_PREDICATES['enjoys'], topic))))
 
 
+    def test_read_facts_by_agent_and_topic(self):
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+
+            facts = graph.read_facts(1, topics=['cinema'])
+
+            joined = '\n'.join(facts)
+            # the agent's own name fact is present, rendered by label
+            self.assertIn('Boku', joined)
+            # a topic-relevant fact (the topic's name) is present
+            self.assertIn('cinema', joined)
+
+
 if __name__ == '__main__':
     unittest.main()
