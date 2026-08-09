@@ -24,7 +24,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from .core import handle_inbound, stream_inbound
 from .db import open_db
 from .mail import parse_conversation_id_from_headers, send_mail
-from .presence import is_free
+from .presence import is_free, presence_label, presence_local_time
 
 LOGIN_FORM = """<!DOCTYPE html>
 <html lang="en">
@@ -49,6 +49,16 @@ def unread_badge_fragment(conversation_id: int, count: int) -> str:
     # OOB fragment that raises the unread count on a background conversation.
     return ('<span id="unread-%d" hx-swap-oob="true">%d</span>'
             % (conversation_id, count))
+
+
+def presence_fragment(conversation_id: int, agent: dict) -> str:
+    # OOB fragment that refreshes the presence indicator (state + local time)
+    # in the chat header and the conversation list for a conversation.
+    label = html.escape(presence_label(agent))
+    local_time = html.escape(presence_local_time(agent))
+    return (
+        '<span id="presence-%d" hx-swap-oob="true">%s %s</span>'
+        % (conversation_id, label, local_time))
 
 
 def get_config(
@@ -211,8 +221,11 @@ def App(**kwargs):
         # Stream the reply through the core and push each chunk to the user's
         # channel so the browser shows the reply as it arrives. Hold the reply
         # until the persona is free (not asleep or at school).
-        await wait_until_free(get_agent(conversation_id))
+        agent = get_agent(conversation_id)
+        await wait_until_free(agent)
         channel = get_channel(user_id)
+        # Refresh the presence indicator now that the persona is free.
+        await channel.put(presence_fragment(conversation_id, agent))
         chunks = stream_inbound(conversation_id, message)
         sentinel = object()
         while True:

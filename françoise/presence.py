@@ -56,6 +56,27 @@ def presence_state(agent: dict, now: datetime = None) -> str:
     return _schedule(agent.get('age'))[now.hour]
 
 
+# Human labels for the UI presence indicator.
+LABELS = {
+    'asleep': 'Sleeping',
+    'school': 'At school',
+    'free': 'Free',
+    'busy': 'Busy',
+}
+
+
+def presence_label(agent: dict, now: datetime = None) -> str:
+    """Return the human-readable presence label (e.g. `Sleeping`) for `now`."""
+    return LABELS[presence_state(agent, now)]
+
+
+def presence_local_time(agent: dict, now: datetime = None) -> str:
+    """Return the agent's local time as `HH:MM` in its own timezone."""
+    tz = ZoneInfo(agent.get('timezone') or 'UTC')
+    now = datetime.now(tz) if now is None else now.astimezone(tz)
+    return now.strftime('%H:%M')
+
+
 # States in which the persona holds a reply rather than sending it now.
 DEFERRED_STATES = ('asleep', 'school')
 
