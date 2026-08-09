@@ -1,0 +1,8 @@
+[
+  {"input": "Reply at CEFR level A1.", "expected": "A1"},
+  {"input": "Reply at CEFR level A2.", "expected": "A2"},
+  {"input": "Reply at CEFR level B1.", "expected": "B1"},
+  {"input": "Reply at CEFR level B2.", "expected": "B2"},
+  {"input": "Reply at CEFR level C1.", "expected": "C1"},
+  {"input": "Reply at CEFR level C2.", "expected": "C2"}
+]

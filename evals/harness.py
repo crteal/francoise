@@ -5,10 +5,13 @@ A fixture is a JSON list of cases; each case is `{"input": str, "expected": str}
 reply. The default score is exact match; later evals pass their own `score` fn.
 """
 import json
+import re
 import sys
 from collections.abc import Callable, Sequence
 
 from françoise.chat import Provider
+
+CEFR_LEVELS = ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')
 
 
 def load_fixtures(path: str) -> list[dict]:
@@ -29,6 +32,29 @@ def contains(reply: str, expected: str) -> float:
     fact is present rather than requiring an exact match.
     """
     return 1.0 if expected.strip().lower() in reply.lower() else 0.0
+
+
+def cefr_level(reply: str) -> str:
+    """Estimate a reply's CEFR level from its mean words-per-sentence.
+
+    ponytail: sentence-length heuristic bucketed into the six levels — no
+    external readability dep. Swap for a scored classifier if replies get
+    mis-levelled in practice.
+    """
+    sentences = [s for s in re.split(r'[.!?]+', reply) if s.strip()]
+    words = reply.split()
+    if not sentences or not words:
+        return 'A1'
+    wps = len(words) / len(sentences)
+    for level, ceiling in zip(CEFR_LEVELS, (6, 9, 12, 16, 20, float('inf'))):
+        if wps <= ceiling:
+            return level
+    return 'C2'
+
+
+def level_fit(reply: str, expected: str) -> float:
+    """Score 1.0 when the reply's estimated CEFR level matches `expected`."""
+    return 1.0 if cefr_level(reply) == expected.strip().upper() else 0.0
 
 
 def run(
