@@ -38,6 +38,18 @@ LOGIN_FORM = """<!DOCTYPE html>
 """
 
 
+def reply_fragment(conversation_id: int, message: str) -> str:
+    # OOB fragment that appends a reply to an open conversation's messages.
+    return ('<div id="messages-%d" hx-swap-oob="beforeend"><div>%s</div></div>'
+            % (conversation_id, html.escape(message)))
+
+
+def unread_badge_fragment(conversation_id: int, count: int) -> str:
+    # OOB fragment that raises the unread count on a background conversation.
+    return ('<span id="unread-%d" hx-swap-oob="true">%d</span>'
+            % (conversation_id, count))
+
+
 def get_config(
         config: dict[str, str],
         k: str,
