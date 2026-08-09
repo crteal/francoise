@@ -14,7 +14,12 @@ def handle_inbound(conversation_id: int, text: str) -> str:
     database_url = os.environ.get('DATABASE_URL', 'data.db')
     llm_api_chat_url = os.environ.get('LLM_API_CHAT_URL', 'http://localhost:11434/api/chat')
 
-    with open_db(database_url) as db:
+    with open_db(database_url) as resolver:
+        account_id = resolver.get_account_id_for_conversation(conversation_id)
+    if account_id is None:
+        raise Exception('conversation with `id` %d does not exist' % conversation_id)
+
+    with open_db(database_url, account_id=account_id) as db:
         result = db.get_conversation(conversation_id)
         if not result:
             raise Exception('conversation with `id` %d does not exist' % conversation_id)

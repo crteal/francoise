@@ -70,9 +70,20 @@ for table in tables:
     tables_by_name[table[0]] = table
 
 
+# Tables scoped by a tenant account. `accounts` is the tenant itself and
+# `messages` is scoped transitively through its conversation.
+account_scoped_tables = ('users', 'agents', 'conversations')
+
+
 class Database:
-    def __init__(self, connection):
+    def __init__(self, connection, account_id=None):
         self.connection = connection
+        self.account_id = account_id
+
+    def require_account(self) -> int:
+        if self.account_id is None:
+            raise Exception('query requires an `account_id`')
+        return self.account_id
 
     def delete_schema(self):
         for table_name in tables_by_name.keys():
@@ -82,6 +93,9 @@ class Database:
         table = tables_by_name.get(table_name)
         if not table:
             raise Exception('table with name `%s` is unspecified' % table_name)
+
+        if table_name in account_scoped_tables:
+            kwargs['account_id'] = self.require_account()
 
         columns = []
         params = []
@@ -112,6 +126,16 @@ class Database:
         res = self.connection.execute(
             "SELECT id, name, created_at FROM accounts WHERE id = ?", (id,))
         return res.fetchone()
+
+    def get_account_id_for_conversation(self, conversation_id: int):
+        # Unscoped resolver: identifies which tenant owns a conversation so a
+        # caller can open a scoped Database. This is the one entry point that
+        # runs before an account is known.
+        res = self.connection.execute(
+            "SELECT account_id FROM conversations WHERE id = ?",
+            (conversation_id,))
+        row = res.fetchone()
+        return row[0] if row else None
 
     def create_agent(
             self,
@@ -153,6 +177,11 @@ class Database:
                 model=model)
 
     def create_message(self, conversation_id: int, role: str, content: str):
+        # messages are scoped through their conversation's account
+        if not self.get_conversation(conversation_id):
+            raise Exception(
+                'conversation with `id` %d does not exist for account'
+                % conversation_id)
         now = datetime.now(timezone.utc)
         return self.table_insert(
                 'messages',
@@ -187,7 +216,8 @@ class Database:
             JOIN agents agent
             ON conversation.agent_id = agent.id
             WHERE conversation.id = ?
-        """, (id,))
+            AND conversation.account_id = ?
+        """, (id, self.require_account()))
         return res.fetchone()
 
     def conversation_to_dict(self, conversation: tuple) -> dict[str, str]:
@@ -205,7 +235,13 @@ class Database:
                     conversation))
 
     def get_messages_by_conversation(self, conversation_id: int):
-        res = self.connection.execute("SELECT role, content FROM messages WHERE conversation_id = ?", (conversation_id,))
+        res = self.connection.execute("""
+            SELECT role, content FROM messages
+            WHERE conversation_id = ?
+            AND conversation_id IN (
+                SELECT id FROM conversations WHERE account_id = ?
+            )
+        """, (conversation_id, self.require_account()))
         return res.fetchall()
 
     def table_delete(self, table_name: str):
@@ -222,9 +258,9 @@ class Database:
 
 
 @contextmanager
-def open_db(url: str):
+def open_db(url: str, account_id=None):
     connection = sqlite3.connect(url)
     try:
-        yield Database(connection)
+        yield Database(connection, account_id)
     finally:
         connection.close()
