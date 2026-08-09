@@ -5,11 +5,27 @@ weather at its location) with a `topic`, a `place`, and a `time`, ready to fold
 into prompt context.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
 import requests
 
 OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast'
+
+# ponytail: fixed-date holidays only; add a lib (e.g. `holidays`) if moving
+# feasts (Easter) or locale-specific days are ever needed.
+HOLIDAYS = {
+    (1, 1): "New Year's Day",
+    (2, 14): "Valentine's Day",
+    (7, 14): 'Bastille Day',
+    (10, 31): 'Halloween',
+    (12, 25): 'Christmas',
+    (12, 31): "New Year's Eve",
+}
+
+
+def _season(when: date) -> str:
+    """Northern-hemisphere season for a date, by month (meteorological)."""
+    return ('winter', 'spring', 'summer', 'autumn')[(when.month % 12) // 3]
 
 
 def weather_signal(latitude: float, longitude: float, place: str = None,
@@ -36,7 +52,28 @@ def weather_signal(latitude: float, longitude: float, place: str = None,
     }
 
 
+def calendar_signal(when: date = None) -> dict:
+    """Seasonal and holiday signal for a date (defaults to today).
+
+    Returns a signal with `topic='calendar'`, the `time`, the `season`, and the
+    `holiday` name (or `None` when the date is not a known holiday).
+    """
+    when = when or date.today()
+    return {
+        'topic': 'calendar',
+        'time': when.isoformat(),
+        'season': _season(when),
+        'holiday': HOLIDAYS.get((when.month, when.day)),
+    }
+
+
 if __name__ == '__main__':
+    xmas = calendar_signal(date(2026, 12, 25))
+    assert xmas['topic'] == 'calendar'
+    assert xmas['holiday'] == 'Christmas'
+    assert xmas['season'] == 'winter'
+    assert calendar_signal(date(2026, 8, 9))['holiday'] is None
+
     class _Resp:
         def raise_for_status(self):
             pass
