@@ -33,6 +33,17 @@ class TestCore(unittest.TestCase):
         self.assertEqual(reply, 'Bonjour !')
         mock_chat.assert_called_once()
 
+    @patch('françoise.core.chat', return_value='Bonjour !')
+    def test_handle_inbound_persists_messages(self, mock_chat):
+        conversation_id = self.conversation[0]
+        handle_inbound(conversation_id, 'Hello')
+
+        with open_db(self.db_path) as db:
+            messages = db.get_messages_by_conversation(conversation_id)
+
+        self.assertIn(('user', 'Hello'), messages)
+        self.assertIn(('assistant', 'Bonjour !'), messages)
+
 
 if __name__ == '__main__':
     unittest.main()
