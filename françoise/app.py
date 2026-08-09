@@ -1,4 +1,5 @@
 import asyncio
+import html
 import os
 import re
 import secrets
@@ -163,6 +164,22 @@ def App(**kwargs):
     @app.get('/', response_class=HTMLResponse)
     def home(session=Depends(require_session)) -> str:
         return 'Welcome.'
+
+    @app.post('/c/{id}/message', response_class=HTMLResponse)
+    def post_message(
+            id: int,
+            message: Annotated[str, Form()],
+            session=Depends(require_session)) -> str:
+        with open_db(DATABASE_URL) as resolver:
+            account_id = resolver.get_account_id_for_conversation(id)
+        if account_id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        with open_db(DATABASE_URL, account_id=account_id) as db:
+            db.add_user_message(id, message)
+
+        # user message partial for an immediate echo
+        return '<div>%s</div>' % html.escape(message)
 
     @app.post('/mailgun', status_code=200)
     async def mailgun(
