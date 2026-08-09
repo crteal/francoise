@@ -165,18 +165,58 @@ class Database:
         row = res.fetchone()
         return row[0] if row else None
 
+    def get_account_id_for_user(self, user_id: int):
+        # Unscoped resolver: a session carries only the user id, so map it to
+        # its owning account before opening a scoped Database.
+        res = self.connection.execute(
+            "SELECT account_id FROM users WHERE id = ?", (user_id,))
+        row = res.fetchone()
+        return row[0] if row else None
+
     def create_agent(
             self,
             name: str,
             language: str,
             proficiency: str,
-            prompt: str) -> tuple:
+            prompt: str,
+            location: str = None,
+            timezone: str = None,
+            interests: str = None,
+            age: int = None,
+            native_language: str = None) -> tuple:
+        # Optional structured persona fields default to None so the existing
+        # 4-arg callers (provisioner, tests) keep working; only set columns
+        # that were given.
+        extra = {
+            'location': location,
+            'timezone': timezone,
+            'interests': interests,
+            'age': age,
+            'native_language': native_language,
+        }
         return self.table_insert(
                 'agents',
                 name=name,
                 language=language,
                 proficiency=proficiency,
-                prompt=prompt)
+                prompt=prompt,
+                **{k: v for k, v in extra.items() if v is not None})
+
+    def list_agents(self) -> list:
+        # Account-scoped list for the persona index (name, language, level,
+        # location).
+        res = self.connection.execute(
+            "SELECT id, name, language, proficiency, location FROM agents "
+            "WHERE account_id = ? ORDER BY id",
+            (self.require_account(),))
+        return res.fetchall()
+
+    def get_agent(self, id: int):
+        res = self.connection.execute(
+            "SELECT id, name, language, proficiency FROM agents "
+            "WHERE id = ? AND account_id = ?",
+            (id, self.require_account()))
+        return res.fetchone()
 
     def create_user(
             self,

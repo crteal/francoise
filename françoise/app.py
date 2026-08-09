@@ -6,6 +6,7 @@ import secrets
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -20,12 +21,19 @@ from fastapi import (
     Response,
     status,
 )
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
+
+from evals.harness import CEFR_LEVELS
 
 from .core import handle_inbound, stream_inbound
 from .db import open_db
+from .graph import open_graph
 from .mail import parse_conversation_id_from_headers, send_mail, verify_signature
+from .persona import build_persona_prompt
 from .presence import is_free, presence_label, presence_local_time
+
+TEMPLATES = Jinja2Templates(directory='templates')
 
 LOGIN_FORM = """<!DOCTYPE html>
 <html lang="en">
@@ -94,6 +102,8 @@ def App(**kwargs):
     MAILGUN_API_SENDER = get_config(kwargs, 'MAILGUN_API_SENDER')
     MAILGUN_API_URL = get_config(kwargs, 'MAILGUN_API_URL')
     SERVER_API_KEY = get_config(kwargs, 'SERVER_API_KEY')
+    GRAPH_PATH = get_config(kwargs, 'GRAPH_PATH', 'graph.db')
+    DEFAULT_MODEL = get_config(kwargs, 'DEFAULT_MODEL', 'ollama/llama3')
 
     # NOTE one message channel for each user, keyed by user id, so events
     # route to the right user instead of leaking through a shared queue.
@@ -241,8 +251,11 @@ def App(**kwargs):
         if session is not None:
             with open_db(DATABASE_URL) as db:
                 row = db.get_session(session)
-            if row is not None:
-                return row
+                if row is not None:
+                    # Resolve the owning account once and ride it on the row
+                    # (session[3]) so account-scoped routes need no re-lookup.
+                    account_id = db.get_account_id_for_user(row[1])
+                    return tuple(row) + (account_id,)
         raise HTTPException(
                 status_code=status.HTTP_307_TEMPORARY_REDIRECT,
                 headers={'Location': '/login'})
@@ -250,6 +263,99 @@ def App(**kwargs):
     @app.get('/', response_class=HTMLResponse)
     def home(session=Depends(require_session)) -> str:
         return 'Welcome.'
+
+    @app.get('/agents', response_class=HTMLResponse)
+    def list_agents(request: Request, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            rows = db.list_agents()
+        agents = [
+            dict(zip(('id', 'name', 'language', 'proficiency', 'location'), r))
+            for r in rows]
+        return TEMPLATES.TemplateResponse(
+            request, 'agents_list.html', {'agents': agents})
+
+    @app.get('/agents/new', response_class=HTMLResponse)
+    def new_agent(request: Request, session=Depends(require_session)):
+        return TEMPLATES.TemplateResponse(
+            request, 'agents_new.html', {'cefr_levels': CEFR_LEVELS})
+
+    @app.post('/agents')
+    def create_agent(
+            request: Request,
+            name: Annotated[str, Form()],
+            native_language: Annotated[str, Form()],
+            language: Annotated[str, Form()],
+            proficiency: Annotated[str, Form()],
+            session=Depends(require_session),
+            location: Annotated[Optional[str], Form()] = None,
+            timezone: Annotated[Optional[str], Form()] = None,
+            interests: Annotated[Optional[str], Form()] = None,
+            age: Annotated[Optional[str], Form()] = None):
+        # Validate at the trust boundary before anything is persisted.
+        error = None
+        parsed_age = None
+        if proficiency not in CEFR_LEVELS:
+            error = 'Proficiency must be one of %s.' % ', '.join(CEFR_LEVELS)
+        elif timezone:
+            try:
+                ZoneInfo(timezone)
+            except (ZoneInfoNotFoundError, ValueError):
+                error = 'Timezone must be a valid IANA name.'
+        if error is None and age:
+            try:
+                parsed_age = int(age)
+            except ValueError:
+                error = 'Age must be a number.'
+
+        if error is not None:
+            return TEMPLATES.TemplateResponse(
+                request, 'agents_new.html',
+                {'cefr_levels': CEFR_LEVELS, 'error': error},
+                status_code=status.HTTP_400_BAD_REQUEST)
+
+        interest_list = [
+            i.strip() for i in (interests or '').split(',') if i.strip()]
+        interests_text = ', '.join(interest_list) or None
+
+        prompt = build_persona_prompt({
+            'name': name,
+            'native_language': native_language,
+            'location': location,
+            'timezone': timezone,
+            'interests': interests_text,
+            'age': parsed_age,
+        })
+
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            agent = db.create_agent(
+                name, language, proficiency, prompt,
+                location=location,
+                timezone=timezone,
+                interests=interests_text,
+                age=parsed_age,
+                native_language=native_language)
+
+        # Seed the persona into the shared `real` graph via the existing helper.
+        with open_graph(GRAPH_PATH) as graph:
+            graph.seed_persona(agent[0], name, interests=interest_list)
+
+        return RedirectResponse(
+            '/agents', status_code=status.HTTP_303_SEE_OTHER)
+
+    @app.post('/agents/{id}/start')
+    def start_conversation(id: int, session=Depends(require_session)):
+        with open_db(DATABASE_URL, account_id=session[3]) as db:
+            agent = db.get_agent(id)
+            if agent is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            conversation = db.create_conversation(
+                user_id=session[1],
+                agent_id=id,
+                proficiency=agent[3],
+                model=DEFAULT_MODEL)
+        return RedirectResponse(
+            '/c/%d' % conversation[0],
+            status_code=status.HTTP_302_FOUND)
 
     @app.get('/stream')
     async def stream(request: Request, session=Depends(require_session)):

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Add a friend</title>
+    <script src="https://unpkg.com/htmx.org@2"></script>
+</head>
+<body>
+    <h1>Add a friend</h1>
+    {% if error %}<p>{{ error }}</p>{% endif %}
+    <form method="post" action="/agents">
+        <label>Name <input type="text" name="name" required></label>
+        <label>Native language <input type="text" name="native_language" required></label>
+        <label>Target language <input type="text" name="language" required></label>
+        <label>Proficiency
+            <select name="proficiency" required>
+                {% for level in cefr_levels %}
+                <option value="{{ level }}">{{ level }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Location (lat, long) <input type="text" name="location"></label>
+        <label>Timezone (IANA) <input type="text" name="timezone" placeholder="Europe/Paris"></label>
+        <label>Interests (comma-separated) <input type="text" name="interests"></label>
+        <label>Age <input type="number" name="age" min="0"></label>
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>
