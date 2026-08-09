@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 from fastapi import BackgroundTasks, FastAPI, Form, Response, status
 
-from .chat import chat, get_prompt_message_from_conversation, message_tuple_to_dict
+from .core import handle_inbound
 from .db import open_db
 from .mail import parse_conversation_id_from_headers, send_mail
 
@@ -49,12 +49,7 @@ def App(**kwargs):
             if sender not in user_email:
                 raise Exception('invalid user email `%s` for conversation %d' % (user_email, conversation_id))
 
-            prompt = get_prompt_message_from_conversation(conversation)
-            db.add_user_message(conversation_id, message)
-            messages = db.get_messages_by_conversation(conversation_id)
-            message_objects = list(map(message_tuple_to_dict, [prompt] + messages))
-            response = chat(message_objects, model=conversation.get('model'), url=LLM_API_CHAT_URL)
-            db.add_assistant_message(conversation_id, response)
+        response = handle_inbound(conversation_id, message)
 
         data = {
             "from": "%s.%d <%s>" % (conversation.get('agent_name'), conversation_id, MAILGUN_API_SENDER),
