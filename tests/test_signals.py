@@ -6,6 +6,7 @@ from datetime import date
 from françoise.graph import open_graph
 from françoise.signals import (
     calendar_signal,
+    contact,
     ground_signals,
     region_signals,
     synthesize,
@@ -188,6 +189,41 @@ class TestSynthesize(unittest.TestCase):
                 'SELECT ?e WHERE { GRAPH <%s> { ?e <%s> ?t } }'
                 % (synthetic, SCHEMA_PREDICATES['name'])))
             self.assertEqual(len(rows), 1)
+
+
+class TestContact(unittest.TestCase):
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.path)
+
+    def test_sends_the_event_as_the_opening_message(self):
+        signal = {'topic': 'cinema', 'place': 'Paris', 'note': 'a new film'}
+        event = 'I went to see the new film in Paris.'
+        model = lambda persona, past, s: event
+        sent = []
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+            grounded = ground_signals(graph, 1, [signal])
+
+            text = contact(graph, 1, grounded[0], send=sent.append, model=model)
+
+        # The opening message is the persona's own first-person event, sent.
+        self.assertEqual(text, event)
+        self.assertEqual(sent, [event])
+
+    def test_nothing_is_sent_when_synthesis_drafts_nothing(self):
+        signal = {'topic': 'cinema', 'place': 'Paris'}
+        model = lambda persona, past, s: ''
+        sent = []
+        with open_graph(self.path) as graph:
+            graph.seed_persona(1, 'Boku', interests=['cinema'])
+
+            text = contact(graph, 1, signal, send=sent.append, model=model)
+
+        self.assertEqual(text, '')
+        self.assertEqual(sent, [])
 
 
 if __name__ == '__main__':
