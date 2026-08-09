@@ -63,12 +63,15 @@ class TestMessageRoute(unittest.TestCase):
         while not channel.empty():
             fragments.append(channel.get_nowait())
 
-        self.assertEqual(len(fragments), 3)
-        for fragment in fragments:
-            self.assertIn('id="messages-%d"' % conversation_id, fragment)
+        # the stream also carries a presence-refresh fragment; the reply
+        # itself arrives as message fragments, one per chunk.
+        message_fragments = [
+            f for f in fragments
+            if 'id="messages-%d"' % conversation_id in f]
+        self.assertEqual(len(message_fragments), 3)
         self.assertEqual(
             ''.join(re.search(r'<div>(.*)</div></div>', f).group(1)
-                    for f in fragments),
+                    for f in message_fragments),
             'Salut !')
 
 
