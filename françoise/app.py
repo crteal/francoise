@@ -3,6 +3,7 @@ import html
 import os
 import re
 import secrets
+import time
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
@@ -107,6 +108,29 @@ def App(**kwargs):
 
     app.state.channels = channels
     app.state.get_channel = get_channel
+
+    # NOTE in-process fixed-window rate limit for each account, keyed by
+    # account id -> (window_start, count). Enough for a single process; a
+    # shared store is the upgrade path when we run more than one.
+    # ponytail: fixed window, in-process; swap for a shared store at multi-process
+    RATE_LIMIT = int(get_config(kwargs, 'RATE_LIMIT', '30'))
+    RATE_LIMIT_WINDOW = float(get_config(kwargs, 'RATE_LIMIT_WINDOW', '60'))
+    rate_counts: dict[int, tuple[float, int]] = {}
+
+    def check_rate_limit(account_id: int) -> bool:
+        # True if the account is under the limit (and this request counts),
+        # False if it has crossed the limit inside the current window.
+        now = time.monotonic()
+        window_start, count = rate_counts.get(account_id, (now, 0))
+        if now - window_start >= RATE_LIMIT_WINDOW:
+            window_start, count = now, 0
+        if count >= RATE_LIMIT:
+            rate_counts[account_id] = (window_start, count)
+            return False
+        rate_counts[account_id] = (window_start, count + 1)
+        return True
+
+    app.state.check_rate_limit = check_rate_limit
 
     def chat_and_reply(
             headers: str,
@@ -282,6 +306,10 @@ def App(**kwargs):
             account_id = resolver.get_account_id_for_conversation(id)
         if account_id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        if not check_rate_limit(account_id):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS)
 
         # NOTE handle_inbound persists the user message, so the route no longer
         # saves it; run it off-thread and stream the reply back over /stream.
