@@ -8,6 +8,8 @@ from françoise.vocab import (
     PREDICATES,
     SCHEMA_PREDICATES,
     agent_iri,
+    entity_iri,
+    message_iri,
     topic_iri,
 )
 
@@ -70,6 +72,49 @@ class Graph:
                 return names[0]['n'].value
             return node.value
         return str(node)
+
+    def resolve_iri(self, name: str) -> str:
+        """The IRI of an existing entity with this `name`, else a fresh one.
+
+        Matches the `name` literal of any node already in the `real` graph so a
+        known entity keeps its IRI instead of being asserted twice.
+        """
+        real = GRAPHS['real']
+        rows = list(self.query(
+            'SELECT ?s WHERE { GRAPH <%s> { ?s <%s> %s } } LIMIT 1'
+            % (real, SCHEMA_PREDICATES['name'], Literal(name))))
+        if rows:
+            return rows[0]['s'].value
+        return entity_iri(name)
+
+    def extract_facts(self, message_id: int, facts):
+        """Assert extracted `(subject, predicate, object)` facts into `real`.
+
+        Each subject and object is resolved to an existing IRI when its name is
+        already known, else minted fresh and given a `name` literal. Every
+        asserted subject is linked to its source message so the fact's
+        provenance is kept. `facts` is an iterable of name/predicate/name
+        triples, e.g. from an extractor over the message text.
+        """
+        real = GRAPHS['real']
+        source = message_iri(message_id)
+        for subject_name, predicate, object_name in facts:
+            subject = self.resolve_iri(subject_name)
+            object = self.resolve_iri(object_name)
+            self._ensure_name(subject, subject_name)
+            self._ensure_name(object, object_name)
+            self.assert_quad(subject, predicate, object, graph=real)
+            self.assert_quad(
+                source, SCHEMA_PREDICATES['mentions'], subject, graph=real)
+
+    def _ensure_name(self, iri: str, name: str):
+        """Give a node its `name` literal in `real` if it lacks one."""
+        real = GRAPHS['real']
+        if not bool(self.query(
+                'ASK { GRAPH <%s> { <%s> <%s> ?n } }'
+                % (real, iri, SCHEMA_PREDICATES['name']))):
+            self.assert_quad(
+                iri, SCHEMA_PREDICATES['name'], name, graph=real, literal=True)
 
     def seed_persona(self, agent_id: int, name: str, interests=()):
         """Write an agent's persona facts into the `real` graph: its own
