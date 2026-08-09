@@ -56,6 +56,15 @@ def presence_state(agent: dict, now: datetime = None) -> str:
     return _schedule(agent.get('age'))[now.hour]
 
 
+# States in which the persona holds a reply rather than sending it now.
+DEFERRED_STATES = ('asleep', 'school')
+
+
+def is_free(agent: dict, now: datetime = None) -> bool:
+    """True when the persona may reply now (state is not deferred)."""
+    return presence_state(agent, now) not in DEFERRED_STATES
+
+
 if __name__ == '__main__':
     child = {'timezone': 'UTC', 'age': 10}
     at = lambda h: datetime(2026, 1, 1, h, tzinfo=ZoneInfo('UTC'))
