@@ -1,0 +1,217 @@
+/* Landing — a magazine desk collage. Loads after app.css (tokens available).
+   Breaks the grid: rotated, overlapping items on the oyster "desk", torn and
+   airmail transitions, SVG illustration instead of stock photography. */
+
+.lp { overflow-x: clip; }
+.lp section { position: relative; }
+
+/* Shared print-card lift: hard offset shadow + hairline, like paper on a desk. */
+.card-print {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 5px 6px 0 rgba(35, 32, 28, .18);
+}
+
+/* Handwritten margin notes. */
+.note {
+  font-family: "Caveat", cursive;
+  font-weight: 600;
+  font-size: 30px;
+  color: var(--vermilion);
+  line-height: .95;
+}
+
+/* Circular postmark / cancellation. */
+.postmark {
+  width: 92px; height: 92px; border-radius: 50%;
+  border: 2px dashed var(--vermilion); color: var(--vermilion);
+  display: grid; place-content: center; text-align: center;
+  font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  transform: rotate(-11deg);
+}
+
+/* Boarding-pass ticket with a perforation notch. */
+.ticket {
+  display: inline-flex; align-items: stretch; min-width: 210px;
+  background: var(--paper); border: 1px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--teal); font-family: "Courier Prime", monospace;
+}
+.ticket__stub {
+  background: var(--teal); color: var(--paper); padding: 10px 12px;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-weight: 700; font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+}
+.ticket__body { padding: 10px 14px; font-size: 11px; line-height: 1.5; color: var(--ink); }
+.ticket__body b { font-size: 15px; letter-spacing: .04em; }
+
+/* ---- HERO: a color-forward desk ---- */
+.lp-hero { padding: var(--space-xl) var(--space-lg); overflow: hidden; }
+.desk {
+  position: relative; max-width: 1080px; margin: 0 auto; min-height: 640px;
+  display: flex; align-items: center;
+}
+.desk__item { position: absolute; }
+
+/* Color mass — mid-century roundels bleeding behind the cover. */
+.roundel { border-radius: 50%; }
+.i-roundel { top: -80px; right: -70px; z-index: 0; }
+.i-roundel .roundel { width: 360px; height: 360px; background: var(--coral); }
+.i-roundel-2 { bottom: -70px; left: -60px; z-index: 0; }
+.i-roundel-2 .roundel { width: 210px; height: 210px; background: var(--ochre); }
+
+/* The flagship cover — a bold teal field, masthead reversed in cream. */
+.hero-cover {
+  position: relative; z-index: 4; width: min(560px, 92%);
+  margin: 0 auto; padding: 40px 44px;
+  background: var(--teal); color: var(--paper);
+  border: 1px solid var(--ink); box-shadow: 12px 13px 0 rgba(35, 32, 28, .28);
+  transform: rotate(-1.5deg);
+}
+.hero-cover .cover-issue {
+  display: flex; justify-content: space-between;
+  font-family: "Courier Prime", monospace; font-size: 12px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--paper); opacity: .85;
+}
+.hero-cover .cover-name {
+  font-family: "Fraunces", serif; font-weight: 600; font-size: 92px; line-height: .84;
+  letter-spacing: -.035em; margin: 10px 0 16px; color: var(--paper);
+}
+.hero-cover .cover-head {
+  font-family: "Fraunces", serif; font-weight: 500; font-size: 28px; line-height: 1.12;
+  max-width: 22ch; margin: 0; color: var(--paper);
+}
+.hero-cover .cover-lines {
+  list-style: none; margin: 22px 0 0; padding: 0;
+  font-family: "Courier Prime", monospace; font-size: 11px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--paper);
+}
+.hero-cover .cover-lines li { padding: 6px 0; border-top: 1px solid rgba(243, 238, 227, .28); }
+
+/* Scattered desk furniture — paper items straddling the color field. */
+.i-photo { top: -34px; left: -48px; z-index: 5; transform: rotate(-7deg); }
+.i-postmark { top: 42%; right: -34px; z-index: 6; }
+.i-ticket { bottom: -24px; right: 26px; z-index: 6; transform: rotate(4deg); }
+.i-note-1 { bottom: 20px; left: -42px; z-index: 6; transform: rotate(-6deg); }
+.i-plane { top: 4px; right: 54px; z-index: 5; transform: rotate(-4deg); }
+.i-sun { bottom: -34px; left: 42%; z-index: 1; opacity: .95; }
+
+/* Background sky — flight paths + distant planes + halftone, behind the cover. */
+.desk__bg { position: absolute; inset: -40px -20px; z-index: 0; pointer-events: none; }
+.desk__bg .routes { width: 100%; height: 100%; display: block; }
+.i-plane-2 { top: 46px; left: 54px; z-index: 1; transform: rotate(9deg); opacity: .7; }
+.i-plane-3 { top: 168px; right: 120px; z-index: 1; transform: rotate(-15deg); opacity: .5; }
+.i-plane-4 { bottom: 30px; left: 34%; z-index: 1; transform: rotate(3deg); opacity: .45; }
+.i-dots { top: 220px; left: 8px; z-index: 1; opacity: .6; }
+.i-star { top: 24px; left: 46%; z-index: 1; opacity: .8; }
+
+/* Extra desk props — more photos + a second boarding pass. */
+.photo--sm { width: 152px; }
+.i-photo-2 { bottom: 26px; right: -52px; z-index: 5; transform: rotate(6deg); }
+.i-photo-3 { bottom: -40px; left: 30%; z-index: 5; transform: rotate(-5deg); }
+.i-ticket-2 { top: 38%; left: -72px; z-index: 6; transform: rotate(-6deg); }
+.ticket--coral .ticket__stub { background: var(--coral); }
+.ticket--coral { box-shadow: 4px 4px 0 var(--ochre); }
+
+/* A "photo print" = SVG illustration in a white border, Polaroid-ish. */
+.photo {
+  padding: 8px 8px 26px; background: #FBF8F1; border: 1px solid var(--rule);
+  box-shadow: 5px 6px 0 rgba(35, 32, 28, .2); width: 200px;
+}
+.photo svg { display: block; width: 100%; height: auto; }
+.photo__cap {
+  font-family: "Caveat", cursive; font-weight: 600; font-size: 20px;
+  color: var(--ink); text-align: center; margin-top: 6px;
+}
+
+/* ---- Transitions ---- */
+.ribbon-avion {
+  color: var(--paper); font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 12px; letter-spacing: .35em; text-transform: uppercase;
+  padding: 10px 0; text-align: center; overflow: hidden; white-space: nowrap;
+  background: repeating-linear-gradient(45deg,
+    var(--coral) 0 14px, var(--navy) 14px 28px);
+  transform: rotate(-1deg); margin: 8px 0;
+}
+.divider-torn { display: block; width: 100%; height: 46px; }
+.stamps-strip {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  padding: 28px var(--space-lg);
+}
+.stamp-il {
+  width: 92px; padding: 6px; background: var(--paper);
+  border: 1px dashed var(--ink); text-align: center;
+  transform: rotate(var(--r, -3deg));
+}
+.stamp-il svg { display: block; width: 100%; height: 62px; }
+.stamp-il span {
+  font-family: "Courier Prime", monospace; font-size: 8px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--ink);
+}
+
+/* ---- Section headers (editorial deck) ---- */
+.lp-deck { text-align: center; padding: var(--space-xl) var(--space-lg) 0; }
+.lp-deck .kicker { color: var(--vermilion); }
+.lp-deck h2 {
+  font-family: "Fraunces", serif; font-weight: 600; font-size: 40px;
+  letter-spacing: -.01em; margin: 6px 0 0;
+}
+
+/* ---- Scattered postcards (dispatches / friends) ---- */
+.scatter {
+  position: relative; max-width: 1000px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 8px; padding: var(--space-xl) var(--space-lg) var(--space-xxl);
+}
+.pc {
+  position: relative; width: 300px; padding: 20px; background: var(--paperShade);
+  border: 1px solid var(--rule); box-shadow: 5px 6px 0 rgba(35, 32, 28, .16);
+}
+.pc:nth-child(1) { transform: rotate(-4deg); }
+.pc:nth-child(2) { transform: rotate(2.5deg); margin-top: 34px; }
+.pc:nth-child(3) { transform: rotate(-2deg); margin-top: 12px; }
+.pc:nth-child(4) { transform: rotate(3.5deg); }
+.pc__stamp {
+  position: absolute; top: 12px; right: 12px; width: 54px; padding: 4px;
+  background: var(--paper); border: 1px dashed var(--vermilion); text-align: center;
+}
+.pc__stamp svg { display: block; width: 100%; height: 34px; }
+.pc__place {
+  font-family: "Courier Prime", monospace; font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--vermilion);
+}
+.pc__name {
+  font-family: "Fraunces", serif; font-weight: 600; font-size: 26px; margin: 2px 0 8px;
+}
+.pc__note { font-size: 14px; color: var(--ink); margin: 0; max-width: 30ch; }
+.pc__level {
+  margin-top: 14px; display: inline-block;
+  font-family: "Courier Prime", monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: var(--teal); color: var(--paper); padding: 4px 8px;
+}
+
+/* ---- Final CTA — a navy field to bookend the color ---- */
+.lp-cta {
+  text-align: center; padding: var(--space-xxl) var(--space-lg) var(--space-xxxl);
+  background: var(--navy); color: var(--paper);
+}
+.lp-cta .cover-issue { color: var(--paper); opacity: .85; }
+.lp-cta .cover-name {
+  font-family: "Fraunces", serif; font-weight: 600; font-size: 72px; line-height: .9;
+  letter-spacing: -.035em; margin: 8px 0 6px; color: var(--paper);
+}
+.lp-cta h2 {
+  font-family: "Fraunces", serif; font-weight: 500; font-size: 30px; margin: 0 0 24px;
+  color: var(--paper);
+}
+.lp-cta .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.lp-cta .buttonSecondary { color: var(--paper); border-color: var(--paper); }
+.lp-cta .buttonSecondary:hover { box-shadow: 4px 4px 0 var(--teal); }
+
+@media (max-width: 720px) {
+  .desk { min-height: 0; }
+  .desk__item { position: static; transform: none !important; margin: 16px auto; display: block; width: fit-content; }
+  .hero-cover { transform: none; margin-top: 0; }
+  .i-sun { display: none; }
+}

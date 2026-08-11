@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}françoise{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/landing.css">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+{% endblock %}
+{% block shell %}
+{#
+  Public landing as a magazine "desk collage": rotated, overlapping items on the
+  oyster desk, SVG illustration (not stock photos), and transitional beats
+  (par-avion ribbon, stamp filmstrip, torn divider) between sections.
+  PLACEHOLDER copy throughout — swap for real destinations/cover-lines later.
+#}
+<div class="lp">
+
+  <!-- ============ HERO · the desk ============ -->
+  <section class="lp-hero">
+    <div class="desk">
+
+      <div class="desk__item i-roundel" aria-hidden="true"><div class="roundel"></div></div>
+      <div class="desk__item i-roundel-2" aria-hidden="true"><div class="roundel"></div></div>
+
+      <div class="desk__bg" aria-hidden="true">
+        <svg class="routes" viewBox="0 0 1080 640" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <path d="M-40 150 C 260 30, 760 250, 1120 110" fill="none" stroke="#234A6B" stroke-width="2" stroke-dasharray="3 9" opacity=".4"/>
+          <path d="M-40 480 C 320 570, 720 330, 1120 500" fill="none" stroke="#C8452E" stroke-width="2" stroke-dasharray="3 9" opacity=".3"/>
+          <circle cx="120" cy="112" r="4" fill="#234A6B" opacity=".5"/>
+          <circle cx="958" cy="150" r="4" fill="#234A6B" opacity=".5"/>
+          <circle cx="150" cy="527" r="4" fill="#C8452E" opacity=".45"/>
+          <circle cx="900" cy="470" r="4" fill="#C8452E" opacity=".4"/>
+        </svg>
+      </div>
+
+      <div class="desk__item i-plane-2" aria-hidden="true">
+        <svg viewBox="0 0 90 60" width="72" height="48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 18 L86 6 L44 32 Z" fill="#234A6B"/><path d="M44 32 L86 6 L52 54 Z" fill="#23201C"/>
+        </svg>
+      </div>
+      <div class="desk__item i-plane-3" aria-hidden="true">
+        <svg viewBox="0 0 90 60" width="56" height="38" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 18 L86 6 L44 32 Z" fill="#C8452E"/><path d="M44 32 L86 6 L52 54 Z" fill="#234A6B"/>
+        </svg>
+      </div>
+      <div class="desk__item i-plane-4" aria-hidden="true">
+        <svg viewBox="0 0 90 60" width="48" height="32" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 18 L86 6 L44 32 Z" fill="#5C7A3D"/><path d="M44 32 L86 6 L52 54 Z" fill="#23201C"/>
+        </svg>
+      </div>
+      <div class="desk__item i-dots" aria-hidden="true">
+        <svg viewBox="0 0 90 54" width="84" xmlns="http://www.w3.org/2000/svg"><g fill="#0E7C7B">
+          <circle cx="8" cy="8" r="3"/><circle cx="26" cy="8" r="3"/><circle cx="44" cy="8" r="3"/><circle cx="62" cy="8" r="3"/><circle cx="80" cy="8" r="3"/>
+          <circle cx="8" cy="27" r="3"/><circle cx="26" cy="27" r="3"/><circle cx="44" cy="27" r="3"/><circle cx="62" cy="27" r="3"/><circle cx="80" cy="27" r="3"/>
+          <circle cx="8" cy="46" r="3"/><circle cx="26" cy="46" r="3"/><circle cx="44" cy="46" r="3"/><circle cx="62" cy="46" r="3"/><circle cx="80" cy="46" r="3"/>
+        </g></svg>
+      </div>
+      <div class="desk__item i-star" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2 L24 16 L38 20 L24 24 L20 38 L16 24 L2 20 L16 16 Z" fill="#E0A63C"/>
+        </svg>
+      </div>
+
+      <div class="desk__item i-sun" aria-hidden="true">
+        <svg viewBox="0 0 160 160" width="150" height="150" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#E0A63C" stroke-width="4" stroke-linecap="round">
+            <line x1="80" y1="6" x2="80" y2="26"/><line x1="80" y1="134" x2="80" y2="154"/>
+            <line x1="6" y1="80" x2="26" y2="80"/><line x1="134" y1="80" x2="154" y2="80"/>
+            <line x1="27" y1="27" x2="41" y2="41"/><line x1="119" y1="119" x2="133" y2="133"/>
+            <line x1="133" y1="27" x2="119" y2="41"/><line x1="41" y1="119" x2="27" y2="133"/>
+          </g>
+          <circle cx="80" cy="80" r="34" fill="#E0A63C"/>
+        </svg>
+      </div>
+
+      <article class="hero-cover">
+        <div class="cover-issue"><span>Issue Nº 01</span><span>Placeholder</span></div>
+        <div class="cover-name">françoise</div>
+        <h1 class="cover-head">A friend who writes to you from&nbsp;abroad.</h1>
+        <ul class="cover-lines">
+          <li>[placeholder] your pen-pal, at your level</li>
+          <li>[placeholder] letters, not lessons</li>
+          <li>[placeholder] the slow way to fluency</li>
+        </ul>
+      </article>
+
+      <div class="desk__item i-photo">
+        <div class="photo">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="150" fill="#E0A63C"/>
+            <circle cx="154" cy="40" r="18" fill="#F3EEE3"/>
+            <path d="M55 122 L100 34 L145 122 Z" fill="#234A6B"/>
+            <rect x="94" y="60" width="12" height="20" fill="#23201C"/>
+            <path d="M100 44 L95 60 L105 60 Z" fill="#23201C"/>
+            <rect y="120" width="200" height="30" fill="#0E7C7B"/>
+            <path d="M0 130 q12 -7 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0" stroke="#F3EEE3" stroke-width="1.5" fill="none" opacity=".6"/>
+          </svg>
+          <div class="photo__cap">Normandie</div>
+        </div>
+      </div>
+
+      <div class="desk__item i-photo-2">
+        <div class="photo photo--sm">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="150" fill="#EDEBE4"/>
+            <circle cx="40" cy="40" r="16" fill="#E0A63C"/>
+            <rect y="96" width="200" height="54" fill="#0E7C7B"/>
+            <path d="M100 30 L100 96 L142 96 Z" fill="#E2603F"/>
+            <path d="M100 40 L100 96 L70 96 Z" fill="#F3EEE3"/>
+            <path d="M64 96 L138 96 L126 108 L76 108 Z" fill="#234A6B"/>
+            <path d="M0 106 q12 -6 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0" stroke="#F3EEE3" stroke-width="1.5" fill="none" opacity=".5"/>
+          </svg>
+          <div class="photo__cap">à la mer</div>
+        </div>
+      </div>
+
+      <div class="desk__item i-photo-3">
+        <div class="photo photo--sm">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="150" fill="#E0A63C"/>
+            <circle cx="158" cy="38" r="15" fill="#F3EEE3"/>
+            <path d="M0 150 L0 92 Q60 66 120 96 T200 90 L200 150 Z" fill="#5C7A3D"/>
+            <path d="M148 108 q5 -26 10 0 Z" fill="#23201C"/>
+            <path d="M0 150 L0 120 Q90 102 200 122 L200 150 Z" fill="#234A6B"/>
+          </svg>
+          <div class="photo__cap">Toscana</div>
+        </div>
+      </div>
+
+      <div class="desk__item i-ticket-2">
+        <div class="ticket ticket--coral">
+          <div class="ticket__stub">Depart</div>
+          <div class="ticket__body">FROM &nbsp;home<br><b>TO Bologna</b><br>issue Nº 02 · A2</div>
+        </div>
+      </div>
+
+      <div class="desk__item i-postmark">
+        <div class="postmark">Par&nbsp;Avion<br>Nº 01</div>
+      </div>
+
+      <div class="desk__item i-ticket">
+        <div class="ticket">
+          <div class="ticket__stub">Boarding</div>
+          <div class="ticket__body">FROM &nbsp;you<br><b>TO fluency</b><br>seat A1 · gate&nbsp;B1</div>
+        </div>
+      </div>
+
+      <div class="desk__item i-note-1">
+        <div class="note">bonjour&nbsp;!</div>
+      </div>
+
+      <div class="desk__item i-plane" aria-hidden="true">
+        <svg viewBox="0 0 110 70" width="100" height="64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 22 L106 8 L54 40 Z" fill="#234A6B"/>
+          <path d="M54 40 L106 8 L66 66 Z" fill="#23201C"/>
+          <path d="M54 40 L66 66 L50 50 Z" fill="#0E7C7B"/>
+          <path d="M2 34 q14 4 26 2" stroke="#C8452E" stroke-width="2" stroke-dasharray="3 5" fill="none"/>
+        </svg>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- transition: airmail ribbon -->
+  <div class="ribbon-avion" aria-hidden="true">par avion · par avion · par avion · par avion · par avion · par avion · par avion · par avion</div>
+
+  <!-- ============ DISPATCHES · how it works ============ -->
+  <div class="lp-deck">
+    <div class="kicker t-postmark">The idea · placeholder</div>
+    <h2>Letters, not lessons</h2>
+  </div>
+  <div class="scatter">
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#0E7C7B"/><path d="M8 30 L30 12 L52 30 Z" fill="#F3EEE3"/><circle cx="30" cy="14" r="4" fill="#E0A63C"/></svg></div>
+      <div class="pc__place">Step Nº 01</div>
+      <div class="pc__name">Choose a friend</div>
+      <p class="pc__note">[placeholder] Pick a pen-pal abroad and the level you read at, A1 to&nbsp;C2.</p>
+    </div>
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#E2603F"/><path d="M10 28 L46 16 L54 19 L48 22 L40 22 L32 32 L28 32 L32 22 L20 26 Z" fill="#F3EEE3"/></svg></div>
+      <div class="pc__place">Step Nº 02</div>
+      <div class="pc__name">Write a letter</div>
+      <p class="pc__note">[placeholder] Say hello, ask about their day, tell them about&nbsp;yours.</p>
+    </div>
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#234A6B"/><rect x="14" y="12" width="32" height="20" fill="#F3EEE3"/><path d="M14 12 L30 24 L46 12" stroke="#234A6B" stroke-width="2.5" fill="none"/></svg></div>
+      <div class="pc__place">Step Nº 03</div>
+      <div class="pc__name">They write back</div>
+      <p class="pc__note">[placeholder] In their own time, in their own voice — and you keep every&nbsp;letter.</p>
+    </div>
+  </div>
+
+  <!-- transition: a strip of stamps -->
+  <div class="stamps-strip" aria-hidden="true">
+    <div class="stamp-il" style="--r:-4deg"><svg viewBox="0 0 100 62"><rect width="100" height="62" fill="#E0A63C"/><circle cx="50" cy="31" r="16" fill="#F3EEE3"/></svg><span>Ochre · 01</span></div>
+    <div class="stamp-il" style="--r:3deg"><svg viewBox="0 0 100 62"><rect width="100" height="62" fill="#0E7C7B"/><path d="M20 44 L50 20 L80 44 Z" fill="#F3EEE3"/></svg><span>Teal · 02</span></div>
+    <div class="stamp-il" style="--r:-2deg"><svg viewBox="0 0 100 62"><rect width="100" height="62" fill="#E2603F"/><circle cx="50" cy="31" r="18" fill="none" stroke="#F3EEE3" stroke-width="3"/><line x1="32" y1="31" x2="68" y2="31" stroke="#F3EEE3" stroke-width="3"/></svg><span>Coral · 03</span></div>
+    <div class="stamp-il" style="--r:4deg"><svg viewBox="0 0 100 62"><rect width="100" height="62" fill="#234A6B"/><path d="M20 46 Q50 16 80 46" fill="none" stroke="#F3EEE3" stroke-width="3"/></svg><span>Navy · 04</span></div>
+    <div class="stamp-il" style="--r:-3deg"><svg viewBox="0 0 100 62"><rect width="100" height="62" fill="#5C7A3D"/><rect x="30" y="18" width="40" height="26" fill="none" stroke="#F3EEE3" stroke-width="3"/></svg><span>Olive · 05</span></div>
+  </div>
+
+  <!-- ============ FRIENDS · pick a pen-pal ============ -->
+  <div class="lp-deck">
+    <div class="kicker t-postmark">Your friends abroad · placeholder</div>
+    <h2>Pick a pen-pal</h2>
+  </div>
+  <div class="scatter">
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#0E7C7B"/><path d="M20 30 L30 16 L40 30 Z" fill="#234A6B"/><rect y="30" width="60" height="10" fill="#F3EEE3" opacity=".5"/></svg></div>
+      <div class="pc__place">Normandy · France</div>
+      <div class="pc__name">Françoise</div>
+      <p class="pc__note">[placeholder] “The storms all week kept me off the beach — and&nbsp;you?”</p>
+      <span class="pc__level">French · B1</span>
+    </div>
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#E2603F"/><rect x="18" y="14" width="24" height="18" fill="#F3EEE3"/><rect x="26" y="8" width="8" height="8" fill="#F3EEE3"/></svg></div>
+      <div class="pc__place">Bologna · Italy</div>
+      <div class="pc__name">Emilio</div>
+      <p class="pc__note">[placeholder] “Ho mangiato le tagliatelle. Raccontami la tua&nbsp;giornata!”</p>
+      <span class="pc__level">Italian · A2</span>
+    </div>
+    <div class="pc">
+      <div class="pc__stamp"><svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#E0A63C"/><circle cx="30" cy="20" r="10" fill="#C8452E"/></svg></div>
+      <div class="pc__place">Kyoto · Japan</div>
+      <div class="pc__name">Haruko</div>
+      <p class="pc__note">[placeholder] “今日は祭りがありました。あなたの町はどう？”</p>
+      <span class="pc__level">Japanese · A1</span>
+    </div>
+  </div>
+
+  <!-- transition: torn paper -->
+  <svg class="divider-torn" viewBox="0 0 1200 46" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M0,12 C150,42 300,2 450,22 C600,40 760,6 900,24 C1050,40 1150,12 1200,20 L1200,46 L0,46 Z" fill="#234A6B"/>
+  </svg>
+
+  <!-- ============ CTA ============ -->
+  <section class="lp-cta">
+    <div class="cover-issue kicker t-postmark">Reply paid · placeholder</div>
+    <div class="cover-name">françoise</div>
+    <h2>Start writing today.</h2>
+    <div class="actions">
+      {% if logged_in %}
+      <a class="button buttonAccent" href="/app">Open françoise</a>
+      {% else %}
+      <a class="button buttonAccent" href="/signup">Sign up</a>
+      <a class="button buttonSecondary" href="/login">Log in</a>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}
