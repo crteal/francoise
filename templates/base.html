@@ -12,6 +12,7 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    {% block shell %}
     <div class="wrap">
         <header>
             <h1 class="masthead"><a href="/">françoise</a></h1>
@@ -22,5 +23,6 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    {% endblock %}
 </body>
 </html>

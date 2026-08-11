@@ -192,6 +192,28 @@ label {
 .deboss { border: 1px solid var(--rule); box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .08), inset -1px -1px 0 rgba(255, 255, 255, .6); }
 .block-shadow { border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--navy); }
 
+/* Auth — a centered, constrained card for login / signup. App surfaces stay wide. */
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  background: var(--paperShade);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--coral);
+  padding: var(--space-xl);
+}
+.auth-head { text-align: center; margin-bottom: var(--space-sm); }
+.auth-card .masthead { font-size: 40px; }
+.auth-card .field { max-width: none; }
+.auth-card .button { width: 100%; text-align: center; margin-top: var(--space-sm); }
+
 /* Par avion border — red/blue dashed airmail frame for correspondence cards. */
 .avion {
   padding: 20px 24px;
