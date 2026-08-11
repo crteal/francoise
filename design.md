@@ -4,13 +4,13 @@ name: françoise
 description: >
   The visual identity for françoise, a language pen-pal you write to abroad.
   Drawn from mid-century American travel magazine Holiday (1946–77, art
-  director Frank Zachary): color-forward modernism on warm paper, editorial
+  director Frank Zachary): color-forward modernism on cool cream paper, editorial
   type at scale, and a correspondence metaphor — postcards, stamps, postmarks.
   Print-like depth (rules and deboss, not soft shadows). The picture is the
   layout.
 colors:
-  paper: "#F5EEDC"        # warm cream — the base ground everywhere; never pure white
-  paperShade: "#ECE1C8"   # recessed/raised paper for cards and wells
+  paper: "#EDEBE4"        # cool cream ("oyster") — the base ground everywhere; never pure white
+  paperShade: "#E3DFD4"   # recessed/raised paper for cards and wells
   ink: "#23201C"          # warm near-black — primary text and rules
   inkMuted: "#6B6355"     # secondary text, captions
   rule: "#C8B896"         # hairline tan — borders, frames, dividers
@@ -142,7 +142,7 @@ page, color used with confidence.
 
 ## Colors
 
-A warm **cream paper** base (`paper`) is the ground for the entire product —
+A cool **cream ("oyster") paper** base (`paper`) is the ground for the entire product —
 never pure white. Text and rules are a warm near-black (`ink`). Against that
 neutral, a saturated travel palette does the talking in confident blocks:
 `teal`, `coral`, `ochre`, and `navy`, with `olive` and `vermilion` in support.
@@ -231,7 +231,7 @@ felt, not seen — and never reduce text contrast below WCAG AA.
 
 **Do**
 - Let one picture/masthead/color block be the layout; keep type tight around it.
-- Keep the ground warm cream; use accents in confident blocks.
+- Keep the ground cool cream ("oyster"); use accents in confident blocks.
 - Reach for the postal metaphor (stamps, postmarks, par avion) as the motif.
 - Use rules, deboss, and one hard block-shadow for depth.
 
