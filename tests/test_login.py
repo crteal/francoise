@@ -34,6 +34,18 @@ class TestLoginRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<form', response.text)
 
+    def test_login_extends_base_shell(self):
+        # The template extends base.html: masthead nameplate + served CSS.
+        response = self.client.get('/login')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('class="masthead"', response.text)
+        self.assertIn('/static/app.css', response.text)
+
+    def test_static_css_serves(self):
+        response = self.client.get('/static/app.css')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('--paper', response.text)
+
     def test_correct_password_creates_session(self):
         response = self.client.post('/login', data={
             'email': 'alice@example.com',

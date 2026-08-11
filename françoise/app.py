@@ -22,6 +22,7 @@ from fastapi import (
     status,
 )
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from evals.harness import CEFR_LEVELS
@@ -34,18 +35,6 @@ from .persona import build_persona_prompt
 from .presence import is_free, presence_label, presence_local_time
 
 TEMPLATES = Jinja2Templates(directory='templates')
-
-LOGIN_FORM = """<!DOCTYPE html>
-<html lang="en">
-<body>
-    <form method="post" action="/login">
-        <input type="email" name="email" required>
-        <input type="password" name="password" required>
-        <button type="submit">Log in</button>
-    </form>
-</body>
-</html>
-"""
 
 SIGNUP_FORM = """<!DOCTYPE html>
 <html lang="en">
@@ -95,6 +84,8 @@ def get_config(
 def App(**kwargs):
 
     app = FastAPI()
+
+    app.mount('/static', StaticFiles(directory='static'), name='static')
 
     DATABASE_URL = get_config(kwargs, 'DATABASE_URL', 'data.db')
     LLM_API_CHAT_URL = get_config(kwargs, 'LLM_API_CHAT_URL', 'http://localhost:11434/api/chat')
@@ -193,8 +184,8 @@ def App(**kwargs):
             response.status_code = status.HTTP_401_UNAUTHORIZED
 
     @app.get('/login', response_class=HTMLResponse)
-    def login_form() -> str:
-        return LOGIN_FORM
+    def login_form(request: Request):
+        return TEMPLATES.TemplateResponse(request, 'login.html')
 
     @app.post('/login', response_class=HTMLResponse)
     def login(
