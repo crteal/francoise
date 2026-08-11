@@ -1,25 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Conversations</title>
-    <script src="https://unpkg.com/htmx.org@2"></script>
-</head>
-<body>
-    <h1>Conversations</h1>
-    <p><a href="/agents/new">Add a friend</a> | <a href="/settings">Settings</a></p>
-    {% if conversations %}
-    <ul>
-        {% for conversation in conversations %}
-        <li>
-            <a href="/c/{{ conversation.id }}">{{ conversation.agent_name }}</a>
-            <span id="presence-{{ conversation.id }}">{{ conversation.presence }}</span>
-            <span id="unread-{{ conversation.id }}">0</span>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No conversations yet.</p>
-    {% endif %}
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Your desk · françoise{% endblock %}
+{% block nav %}{% include "_appnav.html" %}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div class="kicker">Your correspondence</div>
+    <h1 class="t-display">The desk</h1>
+</div>
+
+{% if conversations %}
+<div class="deck">
+    {% for conversation in conversations %}
+    <a class="card-link" href="/c/{{ conversation.id }}">
+        <div class="postcard">
+            <div class="postcard__head">
+                <h2 class="postcard__name">{{ conversation.agent_name }}</h2>
+                <span class="badge unread" id="unread-{{ conversation.id }}">0</span>
+            </div>
+            <div class="postcard__meta">
+                <span class="badge presence" id="presence-{{ conversation.id }}">{{ conversation.presence }}</span>
+            </div>
+            <p class="postcard__note">Read the latest letter →</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty avion">
+    <h2>Start a correspondence</h2>
+    <p>No letters yet. Choose a friend abroad and write your first line.</p>
+    <a class="button buttonAccent" href="/agents/new">New friend</a>
+</div>
+{% endif %}
+{% endblock %}

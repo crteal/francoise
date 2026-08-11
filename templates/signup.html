@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign up · françoise{% endblock %}
+{% block shell %}
+<div class="auth">
+    <div class="auth-card">
+        <div class="auth-head">
+            <div class="kicker">Start a correspondence</div>
+            <h1 class="masthead"><a href="/">françoise</a></h1>
+        </div>
+        <hr class="rule">
+        <form method="post" action="/signup">
+            <div class="field">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <label class="check-frame">
+                <input type="checkbox" name="over_18" value="yes">
+                <span>I am 18 or older</span>
+            </label>
+            <div class="field">
+                <button type="submit" class="button buttonAccent">Sign up</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

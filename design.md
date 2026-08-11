@@ -66,6 +66,12 @@ typography:
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "0.08em"
+  annotation:
+    fontFamily: "Caveat"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: 1.2
+    letterSpacing: "0"
 rounded:
   none: "0"
   sm: "2px"
@@ -168,6 +174,9 @@ An editorial pairing across three roles:
 - **Courier Prime** (typewriter) for the **postmark** role — stamps, dates,
   CEFR badges, cancellation marks. Uppercase, tracked out; used sparingly for
   correspondence flavor.
+- **Caveat** (handwriting) for the **annotation** role — a friend's hand: notes
+  scribbled in a margin, a "bonjour !" on a postcard. Used sparingly for warmth;
+  never for controls or running text.
 
 Rules: display type is tight (negative tracking) and big; body type is roomy
 (1.6 line-height). Never set body in the display face, and never stretch the
