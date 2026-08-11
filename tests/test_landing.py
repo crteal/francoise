@@ -29,12 +29,12 @@ class TestLanding(unittest.TestCase):
         os.remove(self.db_path)
 
     def test_anonymous_landing_renders_without_redirect(self):
-        # Anonymous GET / is the public cover-series landing: 200, no redirect,
-        # masthead nameplate present, sign-up CTA shown.
+        # Anonymous GET / is the public landing collage: 200, no redirect,
+        # françoise nameplate present, sign-up CTA shown.
         anon = TestClient(self.app)
         response = anon.get('/', follow_redirects=False)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('masthead', response.text)
+        self.assertIn('cover-name', response.text)
         self.assertIn('françoise', response.text)
         self.assertIn('cover', response.text)
         self.assertIn('href="/signup"', response.text)
