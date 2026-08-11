@@ -214,6 +214,90 @@ label {
 .auth-card .field { max-width: none; }
 .auth-card .button { width: 100%; text-align: center; margin-top: var(--space-sm); }
 
+/* Landing — a sequence of full-bleed magazine covers. One accent per cover;
+   the françoise nameplate recurs; Fraunces headline is the picture; Courier
+   cover-lines sit in a corner; a stamp/postmark motif marks each. */
+.covers { width: 100%; }
+.cover {
+  position: relative;
+  min-height: 100vh;
+  padding: var(--space-xl) clamp(var(--space-lg), 6vw, var(--space-xxxl));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-lg);
+  border-bottom: 2px solid var(--ink);
+  overflow: hidden;
+}
+/* Accent grounds — color arrives in confident blocks (design.md). */
+.cover--teal  { background: var(--teal);  color: var(--paper); }
+.cover--coral { background: var(--coral); color: var(--paper); }
+.cover--ochre { background: var(--ochre); color: var(--ink); }
+.cover--navy  { background: var(--navy);  color: var(--paper); }
+
+.cover__plate {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  border-bottom: 2px solid currentColor;
+  padding-bottom: var(--space-sm);
+}
+.cover__nameplate {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: clamp(40px, 8vw, 72px);
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: inherit;
+}
+.cover__issue { color: inherit; opacity: .85; }
+
+.cover__headline {
+  align-self: center;
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: clamp(44px, 11vw, 128px);
+  line-height: 1.0;
+  letter-spacing: -.02em;
+  color: inherit;
+}
+
+/* Cover-lines tucked in a corner, typewriter face. */
+.cover__lines {
+  align-self: end;
+  justify-self: start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  opacity: .9;
+}
+.cover__lines li { padding: 2px 0; }
+.cover__lines li::before { content: "— "; }
+
+/* Stamp motif pinned to the top corner of each cover. */
+.cover__stamp {
+  position: absolute;
+  top: var(--space-xl);
+  right: clamp(var(--space-lg), 6vw, var(--space-xxxl));
+  color: var(--paper);
+  border-color: var(--paper);
+  transform: rotate(4deg);
+}
+.cover--ochre .cover__stamp { color: var(--ink); border-color: var(--ink); }
+
+.cover__cta {
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+/* Secondary CTA reads on the navy ground. */
+.cover--navy .buttonSecondary { color: var(--paper); border-color: var(--paper); }
+.cover--navy .buttonSecondary:hover { box-shadow: 4px 4px 0 var(--paper); }
+
 /* Par avion border — red/blue dashed airmail frame for correspondence cards. */
 .avion {
   padding: 20px 24px;

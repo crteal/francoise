@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}françoise{% endblock %}
+{% block shell %}
+{#
+  Public landing: a sequence of full-bleed magazine-cover panels in the
+  Holiday spirit. Scroll flips through "issues". Each cover varies its accent
+  (teal, coral, ochre, navy), carries the françoise masthead as a recurring
+  nameplate, a big Fraunces headline, Courier-Prime cover-lines in a corner,
+  and a postal motif (stamp / postmark / par-avion).
+
+  PLACEHOLDER CONTENT — destinations, personas, and cover-lines below are
+  stand-ins for the owner to replace with real copy. No permanent tagline.
+#}
+<div class="covers">
+
+  {# --- Cover 1 · teal · PLACEHOLDER destination --- #}
+  <section class="cover cover--teal">
+    <div class="cover__plate">
+      <span class="masthead cover__nameplate">françoise</span>
+      <span class="cover__issue t-postmark">Issue Nº 01 · Placeholder</span>
+    </div>
+    <div class="cover__stamp stamp">Par&nbsp;Avion</div>
+    <h2 class="cover__headline">A friend who writes<br>to you from&nbsp;abroad</h2>
+    <ul class="cover__lines t-postmark">
+      <li>[placeholder] your pen-pal in Lisbon</li>
+      <li>[placeholder] letters, not lessons</li>
+      <li>[placeholder] the slow way to fluency</li>
+    </ul>
+  </section>
+
+  {# --- Cover 2 · coral · PLACEHOLDER persona --- #}
+  <section class="cover cover--coral">
+    <div class="cover__plate">
+      <span class="masthead cover__nameplate">françoise</span>
+      <span class="cover__issue t-postmark">Issue Nº 02 · Placeholder</span>
+    </div>
+    <div class="cover__stamp stamp">Postmark</div>
+    <h2 class="cover__headline">Meet [Persona],<br>writing from&nbsp;[City]</h2>
+    <ul class="cover__lines t-postmark">
+      <li>[placeholder] speaks French · A1–C2</li>
+      <li>[placeholder] loves markets & old films</li>
+      <li>[placeholder] replies when she's awake</li>
+    </ul>
+  </section>
+
+  {# --- Cover 3 · ochre · PLACEHOLDER destination --- #}
+  <section class="cover cover--ochre">
+    <div class="cover__plate">
+      <span class="masthead cover__nameplate">françoise</span>
+      <span class="cover__issue t-postmark">Issue Nº 03 · Placeholder</span>
+    </div>
+    <div class="cover__stamp stamp">Air&nbsp;Mail</div>
+    <h2 class="cover__headline">Postcards from<br>somewhere&nbsp;new</h2>
+    <ul class="cover__lines t-postmark">
+      <li>[placeholder] a new city each issue</li>
+      <li>[placeholder] write back at your pace</li>
+      <li>[placeholder] keep every letter</li>
+    </ul>
+  </section>
+
+  {# --- Cover 4 · navy · CTA cover --- #}
+  <section class="cover cover--navy">
+    <div class="cover__plate">
+      <span class="masthead cover__nameplate">françoise</span>
+      <span class="cover__issue t-postmark">Issue Nº 04 · Subscribe</span>
+    </div>
+    <div class="cover__stamp stamp">Reply&nbsp;Paid</div>
+    <h2 class="cover__headline">Start writing<br>today</h2>
+    <div class="cover__cta">
+      {% if logged_in %}
+      <a class="button buttonAccent" href="/app">Open françoise</a>
+      {% else %}
+      <a class="button buttonAccent" href="/signup">Sign up</a>
+      <a class="button buttonSecondary" href="/login">Log in</a>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

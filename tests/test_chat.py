@@ -44,7 +44,7 @@ class TestChatUI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_dashboard_lists_conversations(self):
-        response = self.client.get('/')
+        response = self.client.get('/app')
         self.assertEqual(response.status_code, 200)
         self.assertIn('href="/c/1"', response.text)
         self.assertIn('Boku', response.text)
@@ -75,7 +75,7 @@ class TestChatUI(unittest.TestCase):
 
     def test_routes_require_session(self):
         anon = TestClient(self.app)
-        for path in ('/', '/c/1'):
+        for path in ('/app', '/c/1'):
             response = anon.get(path, follow_redirects=False)
             self.assertEqual(response.status_code, 307)
             self.assertEqual(response.headers['location'], '/login')

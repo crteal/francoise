@@ -252,6 +252,19 @@ def App(**kwargs):
                 headers={'Location': '/login'})
 
     @app.get('/', response_class=HTMLResponse)
+    def landing(request: Request,
+                session: Annotated[Optional[str], Cookie()] = None):
+        # Public magazine-cover landing. No auth: anonymous visitors see the
+        # cover series; a logged-in visitor gets a link into the app instead
+        # of the sign-up CTA.
+        logged_in = False
+        if session is not None:
+            with open_db(DATABASE_URL) as db:
+                logged_in = db.get_session(session) is not None
+        return TEMPLATES.TemplateResponse(
+            request, 'landing.html', {'logged_in': logged_in})
+
+    @app.get('/app', response_class=HTMLResponse)
     def home(request: Request, session=Depends(require_session)):
         with open_db(DATABASE_URL, account_id=session[3]) as db:
             rows = db.list_conversations(session[1])
