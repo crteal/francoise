@@ -1,0 +1,205 @@
+/* françoise design system — tokens + core components (design.md v1.0).
+   Adapted from the rendered specimen; tokens reconciled to design.md
+   (cool oyster paper, paperShade, Fraunces/Work Sans/Courier Prime). */
+
+:root {
+  /* colors */
+  --paper: #EDEBE4;       /* cool oyster — the ground everywhere; never white */
+  --paperShade: #E3DFD4;  /* recessed/raised paper for cards and wells */
+  --ink: #23201C;
+  --inkMuted: #6B6355;
+  --rule: #C8B896;
+  --teal: #0E7C7B;
+  --coral: #E2603F;
+  --ochre: #E0A63C;
+  --navy: #234A6B;
+  --olive: #5C7A3D;
+  --vermilion: #C8452E;
+  --focus: var(--ochre);
+  --success: var(--olive);
+  --error: var(--vermilion);
+
+  /* rounded */
+  --rounded-none: 0;
+  --rounded-sm: 2px;
+  --rounded-md: 4px;
+  --rounded-pill: 999px;
+
+  /* spacing (8px-derived) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-xxl: 64px;
+  --space-xxxl: 96px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: "Work Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper grain — inline SVG feTurbulence multiplied over paper, quiet. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: .5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-xxl) var(--space-xl) var(--space-xxxl);
+}
+
+/* Masthead / nameplate — Fraunces at masthead scale over a rule. */
+.masthead {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -.02em;
+  margin: 0;
+  color: var(--ink);
+}
+.masthead a { color: inherit; text-decoration: none; }
+
+.kicker {
+  font-family: "Courier Prime", monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+}
+
+/* Rules / dividers. */
+.rule { height: 2px; background: var(--ink); border: 0; margin: var(--space-md) 0 var(--space-sm); }
+.rule-thin { height: 1px; background: var(--rule); border: 0; }
+
+/* Type roles (design.md). */
+.t-display  { font-family: "Fraunces", serif; font-weight: 600; font-size: 40px; line-height: 1.05; letter-spacing: -.01em; }
+.t-heading  { font-family: "Fraunces", serif; font-weight: 600; font-size: 24px; line-height: 1.15; letter-spacing: 0; }
+.t-body     { font-family: "Work Sans", sans-serif; font-size: 16px; line-height: 1.6; max-width: 66ch; }
+.t-caption  { font-family: "Work Sans", sans-serif; font-weight: 500; font-size: 13px; letter-spacing: .02em; line-height: 1.4; }
+.t-postmark { font-family: "Courier Prime", monospace; font-weight: 700; font-size: 12px; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase; }
+
+/* Buttons — square-ish, ink fill, tracked caption; hard block-shadow on hover. */
+.button {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .02em;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: var(--rounded-sm);
+  cursor: pointer;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: none;
+  transition: box-shadow .1s, transform .1s;
+}
+.button:hover { box-shadow: 4px 4px 0 var(--teal); }
+.buttonAccent { background: var(--coral); }
+.buttonAccent:hover { box-shadow: 4px 4px 0 var(--ink); }
+.buttonSecondary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.buttonSecondary:hover { box-shadow: 4px 4px 0 var(--ink); }
+
+/* Inputs / selects — cream field, hairline rule, deboss, ochre focus. */
+label {
+  display: block;
+  font-family: "Work Sans", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .02em;
+  margin-bottom: 6px;
+}
+.input, input:not([type=checkbox]):not([type=radio]), select, textarea {
+  width: 100%;
+  font-family: "Work Sans", sans-serif;
+  font-size: 15px;
+  padding: 10px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--rounded-sm);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, .08), inset -1px -1px 0 rgba(255, 255, 255, .5);
+}
+.input:focus, input:focus, select:focus, textarea:focus {
+  outline: 0;
+  border-color: var(--ochre);
+}
+
+.field { display: block; margin-top: var(--space-md); max-width: 360px; }
+
+/* Postcard — the workhorse card: paperShade ground, hairline frame. */
+.postcard {
+  position: relative;
+  background: var(--paperShade);
+  border: 1px solid var(--rule);
+  border-radius: var(--rounded-none);
+  padding: var(--space-lg);
+}
+.postcard::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed var(--rule);
+  pointer-events: none;
+}
+
+/* Stamp / badge — Courier Prime, dashed vermilion edge. */
+.stamp {
+  font-family: "Courier Prime", monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+  border: 1px dashed var(--vermilion);
+  padding: 4px 8px;
+  text-align: center;
+}
+.badge {
+  font-family: "Courier Prime", monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--ink);
+}
+.badge.level { background: var(--teal); color: var(--paper); border-color: var(--teal); }
+.badge.presence { color: var(--vermilion); border: 1px dashed var(--vermilion); }
+.badge.unread { background: var(--coral); color: var(--paper); border-color: var(--coral); border-radius: var(--rounded-pill); }
+
+/* Depth — print, not Material. */
+.deboss { border: 1px solid var(--rule); box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .08), inset -1px -1px 0 rgba(255, 255, 255, .6); }
+.block-shadow { border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--navy); }
+
+/* Par avion border — red/blue dashed airmail frame for correspondence cards. */
+.avion {
+  padding: 20px 24px;
+  background: var(--paper);
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(var(--paper), var(--paper)),
+    repeating-linear-gradient(45deg, var(--coral) 0 10px, var(--paper) 10px 20px, var(--navy) 20px 30px, var(--paper) 30px 40px);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
