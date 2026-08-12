@@ -27,6 +27,16 @@ class TestSignupRoutes(unittest.TestCase):
             return db.connection.execute(
                 'SELECT COUNT(*) FROM users').fetchone()[0]
 
+    def test_get_signup_extends_base_shell(self):
+        # The template extends base.html: masthead nameplate, served CSS,
+        # and keeps the 18+ age-gate checkbox.
+        response = self.client.get('/signup')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<form', response.text)
+        self.assertIn('class="masthead"', response.text)
+        self.assertIn('/static/app.css', response.text)
+        self.assertIn('name="over_18"', response.text)
+
     def test_over_18_completes_signup(self):
         response = self.client.post('/signup', data={
             'name': 'Alice',

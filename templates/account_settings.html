@@ -1,19 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Account settings</title>
-</head>
-<body>
-    <p><a href="/app">Back</a></p>
-    <h1>Account settings</h1>
-    <form method="post" action="/settings">
-        <label>
-            <input type="checkbox" name="always_available" value="yes"
-                {% if always_available %}checked{% endif %}>
-            Always available (adult personas reply without waiting)
-        </label>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Account settings · françoise{% endblock %}
+{% block nav %}{% include "_appnav.html" %}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div class="kicker">Your account</div>
+    <h1 class="t-display">Settings</h1>
+</div>
+
+<form method="post" action="/settings" class="passport">
+    <label class="check-frame">
+        <input type="checkbox" name="always_available" value="yes"
+            {% if always_available %}checked{% endif %}>
+        <span>Always available (adult personas reply without waiting)</span>
+    </label>
+    <div class="field">
+        <button type="submit" class="button buttonAccent">Save</button>
+    </div>
+</form>
+{% endblock %}

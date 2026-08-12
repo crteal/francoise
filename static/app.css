@@ -65,6 +65,11 @@ body::before {
   padding: var(--space-xxl) var(--space-xl) var(--space-xxxl);
 }
 
+/* Breathing room off the masthead on app surfaces. */
+.wrap header { margin-bottom: var(--space-lg); }
+.wrap header .masthead { line-height: 1.1; }
+.wrap header .rule { margin: var(--space-sm) 0 var(--space-md); }
+
 /* Masthead / nameplate — Fraunces at masthead scale over a rule. */
 .masthead {
   font-family: "Fraunces", serif;
@@ -297,6 +302,122 @@ label {
 /* Secondary CTA reads on the navy ground. */
 .cover--navy .buttonSecondary { color: var(--paper); border-color: var(--paper); }
 .cover--navy .buttonSecondary:hover { box-shadow: 4px 4px 0 var(--paper); }
+
+/* Authed nav — a simple tracked-caption row of links under the masthead. */
+.appnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-top: var(--space-sm);
+}
+.appnav a {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 2px;
+}
+.appnav a:hover { border-bottom-color: var(--coral); }
+
+/* Page head — a display title with a Courier kicker over it. */
+.page-head { margin-bottom: var(--space-xl); }
+.page-head .kicker { margin-bottom: var(--space-xs); }
+.page-head h1 { margin: 0; }
+
+/* Age-gate framed on-brand for the signup card. */
+.check-frame {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: var(--paper);
+  border: 1px dashed var(--vermilion);
+  font-family: "Work Sans", sans-serif;
+  font-size: 14px;
+}
+.check-frame input { width: auto; box-shadow: none; }
+
+/* Correspondence deck — conversations/personas as postcards in a wide grid. */
+.deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+.card-link { text-decoration: none; color: inherit; display: block; }
+.card-link:hover .postcard { box-shadow: 4px 4px 0 var(--navy); }
+
+.postcard__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.postcard__name {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 0;
+}
+.postcard__meta {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+.postcard__note {
+  margin: var(--space-md) 0 0;
+  color: var(--inkMuted);
+  font-size: 14px;
+}
+
+/* Empty state — a par-avion note inviting the first correspondence. */
+.empty {
+  text-align: center;
+  padding: var(--space-xxl) var(--space-xl);
+}
+.empty h2 { font-family: "Fraunces", serif; font-weight: 600; margin: 0 0 var(--space-sm); }
+.empty p { color: var(--inkMuted); margin: 0 0 var(--space-lg); }
+
+/* Handwritten annotation — a friend's hand (Caveat). */
+.annotation {
+  font-family: "Caveat", cursive;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--teal);
+}
+
+/* Editorial "passport / persona" form — a framed field grid. */
+.passport {
+  background: var(--paperShade);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--teal);
+  padding: var(--space-xl);
+  max-width: 720px;
+}
+.passport .field { max-width: none; margin-top: var(--space-lg); }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--space-lg);
+}
+.form-grid .field-wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+.error {
+  color: var(--vermilion);
+  font-family: "Courier Prime", monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .04em;
+  margin: 0 0 var(--space-md);
+}
 
 /* Par avion border — red/blue dashed airmail frame for correspondence cards. */
 .avion {

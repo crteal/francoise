@@ -36,20 +36,6 @@ from .presence import is_free, presence_label, presence_local_time
 
 TEMPLATES = Jinja2Templates(directory='templates')
 
-SIGNUP_FORM = """<!DOCTYPE html>
-<html lang="en">
-<body>
-    <form method="post" action="/signup">
-        <input type="text" name="name" required>
-        <input type="email" name="email" required>
-        <input type="password" name="password" required>
-        <label><input type="checkbox" name="over_18" value="yes"> I am 18 or older</label>
-        <button type="submit">Sign up</button>
-    </form>
-</body>
-</html>
-"""
-
 
 def reply_fragment(conversation_id: int, message: str) -> str:
     # OOB fragment that appends a reply to an open conversation's messages.
@@ -215,8 +201,8 @@ def App(**kwargs):
         return 'Logged in.'
 
     @app.get('/signup', response_class=HTMLResponse)
-    def signup_form() -> str:
-        return SIGNUP_FORM
+    def signup_form(request: Request):
+        return TEMPLATES.TemplateResponse(request, 'signup.html')
 
     @app.post('/signup', response_class=HTMLResponse)
     def signup(

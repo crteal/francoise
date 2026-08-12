@@ -1,29 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Add a friend</title>
-    <script src="https://unpkg.com/htmx.org@2"></script>
-</head>
-<body>
-    <h1>Add a friend</h1>
-    {% if error %}<p>{{ error }}</p>{% endif %}
-    <form method="post" action="/agents">
-        <label>Name <input type="text" name="name" required></label>
-        <label>Native language <input type="text" name="native_language" required></label>
-        <label>Target language <input type="text" name="language" required></label>
-        <label>Proficiency
-            <select name="proficiency" required>
+{% extends "base.html" %}
+{% block title %}New friend · françoise{% endblock %}
+{% block nav %}{% include "_appnav.html" %}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div class="kicker">Passport · new persona</div>
+    <h1 class="t-display">A friend abroad</h1>
+</div>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+<form method="post" action="/agents" class="passport">
+    <div class="form-grid">
+        <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="field">
+            <label for="proficiency">Proficiency</label>
+            <select id="proficiency" name="proficiency" required>
                 {% for level in cefr_levels %}
                 <option value="{{ level }}">{{ level }}</option>
                 {% endfor %}
             </select>
-        </label>
-        <label>Location (lat, long) <input type="text" name="location"></label>
-        <label>Timezone (IANA) <input type="text" name="timezone" placeholder="Europe/Paris"></label>
-        <label>Interests (comma-separated) <input type="text" name="interests"></label>
-        <label>Age <input type="number" name="age" min="0"></label>
-        <button type="submit">Create</button>
-    </form>
-</body>
-</html>
+        </div>
+        <div class="field">
+            <label for="native_language">Native language</label>
+            <input type="text" id="native_language" name="native_language" required>
+        </div>
+        <div class="field">
+            <label for="language">Target language</label>
+            <input type="text" id="language" name="language" required>
+        </div>
+        <div class="field">
+            <label for="location">Location (lat, long)</label>
+            <input type="text" id="location" name="location">
+        </div>
+        <div class="field">
+            <label for="timezone">Timezone (IANA)</label>
+            <input type="text" id="timezone" name="timezone" placeholder="Europe/Paris">
+        </div>
+        <div class="field field-wide">
+            <label for="interests">Interests (comma-separated)</label>
+            <input type="text" id="interests" name="interests">
+        </div>
+        <div class="field">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" min="0">
+        </div>
+    </div>
+    <div class="field">
+        <button type="submit" class="button buttonAccent">Create</button>
+    </div>
+</form>
+{% endblock %}

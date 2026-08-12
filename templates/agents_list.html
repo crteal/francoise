@@ -1,27 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Friends</title>
-    <script src="https://unpkg.com/htmx.org@2"></script>
-</head>
-<body>
-    <h1>Friends</h1>
-    <p><a href="/agents/new">Add a friend</a></p>
-    {% if agents %}
-    <ul>
-        {% for agent in agents %}
-        <li>
-            {{ agent.name }} — {{ agent.language }} ({{ agent.proficiency }})
-            {% if agent.location %}— {{ agent.location }}{% endif %}
-            <form method="post" action="/agents/{{ agent.id }}/start">
-                <button type="submit">Start conversation</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No friends yet.</p>
-    {% endif %}
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Friends · françoise{% endblock %}
+{% block nav %}{% include "_appnav.html" %}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div class="kicker">Your friends abroad</div>
+    <h1 class="t-display">Friends</h1>
+</div>
+
+{% if agents %}
+<div class="deck">
+    {% for agent in agents %}
+    <div class="postcard">
+        <div class="postcard__head">
+            <h2 class="postcard__name">{{ agent.name }}</h2>
+            <span class="badge level">{{ agent.proficiency }}</span>
+        </div>
+        <div class="postcard__meta">
+            <span class="t-postmark">{{ agent.language }}</span>
+            {% if agent.location %}<span class="t-postmark">· {{ agent.location }}</span>{% endif %}
+        </div>
+        <form method="post" action="/agents/{{ agent.id }}/start">
+            <div class="field">
+                <button type="submit" class="button">Start conversation</button>
+            </div>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty avion">
+    <h2>No friends yet</h2>
+    <p>Invent a pen-pal abroad to start writing.</p>
+    <a class="button buttonAccent" href="/agents/new">New friend</a>
+</div>
+{% endif %}
+{% endblock %}

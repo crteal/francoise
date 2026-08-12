@@ -1,25 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Settings — {{ conversation.agent_name }}</title>
-</head>
-<body>
-    <p><a href="/c/{{ conversation.id }}">Back</a></p>
-    <h1>Settings — {{ conversation.agent_name }}</h1>
-    {% if error %}<p>{{ error }}</p>{% endif %}
-    <form method="post" action="/c/{{ conversation.id }}/settings">
-        <label>Proficiency
-            <select name="proficiency" required>
-                {% for level in cefr_levels %}
-                <option value="{{ level }}"{% if level == conversation.user_proficiency %} selected{% endif %}>{{ level }}</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Model
-            <input type="text" name="model" value="{{ conversation.model }}" required>
-        </label>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Settings · {{ conversation.agent_name }} · françoise{% endblock %}
+{% block nav %}
+<nav class="appnav">
+    <a href="/c/{{ conversation.id }}">Back to letters</a>
+    <a href="/app">Desk</a>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div class="kicker">Correspondence settings</div>
+    <h1 class="t-display">{{ conversation.agent_name }}</h1>
+</div>
+
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+<form method="post" action="/c/{{ conversation.id }}/settings" class="passport">
+    <div class="field">
+        <label for="proficiency">Proficiency</label>
+        <select id="proficiency" name="proficiency" required>
+            {% for level in cefr_levels %}
+            <option value="{{ level }}"{% if level == conversation.user_proficiency %} selected{% endif %}>{{ level }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="model">Model</label>
+        <input type="text" id="model" name="model" value="{{ conversation.model }}" required>
+    </div>
+    <div class="field">
+        <button type="submit" class="button buttonAccent">Save</button>
+    </div>
+</form>
+{% endblock %}
