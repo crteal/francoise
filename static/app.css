@@ -65,6 +65,11 @@ body::before {
   padding: var(--space-xxl) var(--space-xl) var(--space-xxxl);
 }
 
+/* Breathing room off the masthead on app surfaces. */
+.wrap header { margin-bottom: var(--space-lg); }
+.wrap header .masthead { line-height: 1.1; }
+.wrap header .rule { margin: var(--space-sm) 0 var(--space-md); }
+
 /* Masthead / nameplate — Fraunces at masthead scale over a rule. */
 .masthead {
   font-family: "Fraunces", serif;
