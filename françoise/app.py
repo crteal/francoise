@@ -75,6 +75,20 @@ def render_message(role: str, content: str) -> str:
     return html.escape(content)
 
 
+def format_stamp(iso: str, tz: Optional[str] = None) -> str:
+    # A postmark-style date/time for a message, in the persona's local zone.
+    try:
+        dt = datetime.fromisoformat(iso)
+    except (TypeError, ValueError):
+        return iso
+    if tz:
+        try:
+            dt = dt.astimezone(ZoneInfo(tz))
+        except (ZoneInfoNotFoundError, ValueError):
+            pass
+    return dt.strftime('%-d %b · %H:%M')
+
+
 def get_config(
         config: dict[str, str],
         k: str,
@@ -292,7 +306,8 @@ def App(**kwargs):
             messages = [
                 {'role': r,
                  'html': render_message(r, c),
-                 'created_at': ts}
+                 'iso': ts,
+                 'stamp': format_stamp(ts)}
                 for r, c, ts in db.get_messages_by_conversation(id)]
         return TEMPLATES.TemplateResponse(
             request, 'chat.html',

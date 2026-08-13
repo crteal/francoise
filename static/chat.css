@@ -11,31 +11,31 @@
   justify-content: space-between;
   gap: var(--space-lg);
   flex-wrap: wrap;
-  margin-bottom: var(--space-xs);
+  margin-bottom: var(--space-lg);
 }
 .chat-head .kicker { margin-bottom: var(--space-xs); }
 .chat-head h1 { margin: 0; }
+.chat-head__settings {
+  display: inline-block; margin-top: var(--space-sm);
+  font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--inkMuted); text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.chat-head__settings:hover { color: var(--ink); border-bottom-color: var(--coral); }
 
 /* Presence postmark — circular cancellation in vermilion; local time inside. */
 .chat .postmark {
-  min-width: 108px; min-height: 108px; padding: var(--space-sm);
+  width: 116px; height: 116px; padding: 10px;
   border-radius: 50%;
   border: 2px dashed var(--vermilion); color: var(--vermilion);
   display: grid; place-content: center; text-align: center;
   font-family: "Courier Prime", monospace; font-weight: 700;
-  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  font-size: 10px; line-height: 1.35; letter-spacing: .06em; text-transform: uppercase;
   transform: rotate(-8deg);
   flex: none;
 }
 
-.chat-settings { margin: 0 0 var(--space-lg); }
-.chat-settings a {
-  font-family: "Work Sans", sans-serif; font-weight: 500;
-  font-size: 13px; letter-spacing: .02em; text-transform: uppercase;
-  color: var(--inkMuted); text-decoration: none;
-  border-bottom: 1px solid var(--rule);
-}
-.chat-settings a:hover { color: var(--ink); border-bottom-color: var(--coral); }
 
 /* The exchange. */
 .letters {
