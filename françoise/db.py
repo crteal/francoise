@@ -339,7 +339,8 @@ class Database:
                 agent.proficiency AS agent_proficiency,
                 agent.prompt AS agent_prompt,
                 agent.timezone AS timezone,
-                agent.age AS age
+                agent.age AS age,
+                agent.location AS location
             FROM conversations conversation
             JOIN users user
             ON conversation.user_id = user.id
@@ -383,12 +384,13 @@ class Database:
                          'agent_proficiency',
                          'agent_prompt',
                          'timezone',
-                         'age'),
+                         'age',
+                         'location'),
                     conversation))
 
     def get_messages_by_conversation(self, conversation_id: int):
         res = self.connection.execute("""
-            SELECT role, content FROM messages
+            SELECT role, content, created_at FROM messages
             WHERE conversation_id = ?
             AND conversation_id IN (
                 SELECT id FROM conversations WHERE account_id = ?

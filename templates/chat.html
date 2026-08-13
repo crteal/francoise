@@ -1,28 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>{{ conversation.agent_name }}</title>
-    <script src="https://unpkg.com/htmx.org@2"></script>
-    <script src="https://unpkg.com/htmx-ext-sse@2"></script>
-</head>
-<body hx-ext="sse" sse-connect="/stream">
-    <p><a href="/app">Back</a> | <a href="/c/{{ conversation.id }}/settings">Settings</a></p>
-    <h1>
-        {{ conversation.agent_name }}
-        <span id="presence-{{ conversation.id }}">{{ presence }}</span>
-    </h1>
-    <div id="messages-{{ conversation.id }}">
+{% extends "base.html" %}
+{% block title %}{{ conversation.agent_name }} · françoise{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/chat.css">
+    <script src="https://unpkg.com/htmx-ext-sse@2"></script>{% endblock %}
+{% block nav %}{% include "_appnav.html" %}{% endblock %}
+{% block content %}
+<div class="chat" hx-ext="sse" sse-connect="/stream">
+    <header class="chat-head">
+        <div class="chat-head__who">
+            <div class="kicker">A letter from{% if conversation.location %} {{ conversation.location }}{% endif %}</div>
+            <h1 class="t-display">{{ conversation.agent_name }}</h1>
+            <a class="chat-head__settings" href="/c/{{ conversation.id }}/settings">Conversation settings</a>
+        </div>
+        <div class="postmark">
+            <span id="presence-{{ conversation.id }}">{{ presence }} · {{ local_time }}</span>
+        </div>
+    </header>
+
+    <div class="letters" id="messages-{{ conversation.id }}">
         {% for message in messages %}
-        <div>{{ message.content }}</div>
+        <article class="letter letter--{{ 'in' if message.role == 'assistant' else 'out' }}">
+            <div class="letter__body">{{ message.html | safe }}</div>
+            {% if message.iso %}<time class="letter__stamp" datetime="{{ message.iso }}">{{ message.stamp }}</time>{% endif %}
+        </article>
+        {% else %}
+        <div class="empty avion">
+            <h2>Say bonjour…</h2>
+            <p>No letters yet. Write your first line to {{ conversation.agent_name }}.</p>
+        </div>
         {% endfor %}
     </div>
-    <form hx-post="/c/{{ conversation.id }}/message"
+
+    <form class="compose"
+          hx-post="/c/{{ conversation.id }}/message"
           hx-target="#messages-{{ conversation.id }}"
           hx-swap="beforeend"
           hx-on::after-request="this.reset()">
-        <input type="text" name="message" required>
-        <button type="submit">Send</button>
+        <input type="text" name="message" placeholder="Write back…" autocomplete="off" required>
+        <button class="button buttonAccent" type="submit">Send</button>
     </form>
-</body>
-</html>
+</div>
+<script>
+  // Message stamps in the VIEWER's timezone/locale — the server can't know it.
+  (function () {
+    var fmt = new Intl.DateTimeFormat([], {
+      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    document.querySelectorAll('time.letter__stamp[datetime]').forEach(function (t) {
+      var d = new Date(t.getAttribute('datetime'));
+      if (!isNaN(d)) t.textContent = fmt.format(d);
+    });
+  })();
+</script>
+{% endblock %}

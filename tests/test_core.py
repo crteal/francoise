@@ -45,8 +45,11 @@ class TestCore(unittest.TestCase):
         with open_db(self.db_path, account_id=self.account_id) as db:
             messages = db.get_messages_by_conversation(conversation_id)
 
-        self.assertIn(('user', 'Hello'), messages)
-        self.assertIn(('assistant', 'Bonjour !'), messages)
+        # get_messages_by_conversation now returns (role, content, created_at);
+        # core ignores the timestamp (message_tuple_to_dict zips role/content).
+        pairs = [(role, content) for role, content, *_ in messages]
+        self.assertIn(('user', 'Hello'), pairs)
+        self.assertIn(('assistant', 'Bonjour !'), pairs)
 
     def test_handle_inbound_raises_when_conversation_missing(self):
         with self.assertRaises(Exception):
