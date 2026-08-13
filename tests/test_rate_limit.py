@@ -44,8 +44,11 @@ class TestRateLimit(unittest.TestCase):
     def test_requests_under_the_limit_pass_and_over_the_limit_error(self):
         conversation_id = self.conversation[0]
 
+        # is_free pinned True so the deferral background task completes
+        # deterministically (otherwise it loops on the wall-clock and hangs).
         with patch('françoise.app.stream_inbound',
-                   return_value=iter([])):
+                   return_value=iter([])), \
+                patch('françoise.app.is_free', return_value=True):
             # under the limit: passes
             for _ in range(2):
                 ok = self.client.post(

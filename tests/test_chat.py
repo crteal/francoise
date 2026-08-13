@@ -63,7 +63,10 @@ class TestChatUI(unittest.TestCase):
         self.assertIn('Bonjour &lt;b&gt;', response.text)
 
     def test_post_message_returns_echo(self):
-        with patch('françoise.app.stream_inbound', return_value=iter([])):
+        # is_free pinned True so the deferral background task completes
+        # deterministically (otherwise it loops on the wall-clock and hangs).
+        with patch('françoise.app.stream_inbound', return_value=iter([])), \
+                patch('françoise.app.is_free', return_value=True):
             response = self.client.post(
                 '/c/1/message', data={'message': 'Salut'})
         self.assertEqual(response.status_code, 200)

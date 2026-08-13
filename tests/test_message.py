@@ -43,8 +43,11 @@ class TestMessageRoute(unittest.TestCase):
     def test_post_message_echoes_calls_core_and_streams_reply(self):
         conversation_id = self.conversation[0]
 
+        # is_free pinned True so the deferral background task completes
+        # deterministically (otherwise it loops on the wall-clock and hangs).
         with patch('françoise.app.stream_inbound',
-                   return_value=iter(['Sa', 'lut', ' !'])) as mock_core:
+                   return_value=iter(['Sa', 'lut', ' !'])) as mock_core, \
+                patch('françoise.app.is_free', return_value=True):
             response = self.client.post(
                 '/c/%d/message' % conversation_id,
                 data={'message': 'Bonjour'})
