@@ -115,6 +115,21 @@ class TestAgentRoutes(unittest.TestCase):
         self.assertIsNotNone(row)
         self.assertEqual(response.headers['location'], '/c/%d' % row[0])
 
+    def test_start_twice_opens_same_conversation(self):
+        # Starting with a friend you already have a conversation with must open
+        # the existing one, not 500 on UNIQUE(model_config_id, user_id, agent_id).
+        self.client.post('/agents', data=self._valid_form())
+        with open_db(self.db_path, account_id=1) as db:
+            agent_id = db.list_agents()[0][0]
+
+        first = self.client.post(
+            '/agents/%d/start' % agent_id, follow_redirects=False)
+        second = self.client.post(
+            '/agents/%d/start' % agent_id, follow_redirects=False)
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(first.headers['location'], second.headers['location'])
+
     def test_invalid_cefr_is_rejected(self):
         response = self.client.post(
             '/agents', data=self._valid_form(proficiency='Z9'))

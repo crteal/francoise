@@ -289,6 +289,17 @@ class Database:
                 proficiency=proficiency,
                 model_config_id=self.upsert_model_config(model))
 
+    def find_conversation_for_agent(self, user_id: int, agent_id: int):
+        # An existing conversation id for this user+agent in the account, or
+        # None — so "start" opens the conversation you already have instead of
+        # violating UNIQUE(model_config_id, user_id, agent_id).
+        res = self.connection.execute(
+            "SELECT id FROM conversations "
+            "WHERE user_id = ? AND agent_id = ? AND account_id = ?",
+            (user_id, agent_id, self.require_account()))
+        row = res.fetchone()
+        return row[0] if row else None
+
     def update_conversation_settings(
             self,
             conversation_id: int,

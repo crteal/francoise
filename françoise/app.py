@@ -454,13 +454,18 @@ def App(**kwargs):
             agent = db.get_agent(id)
             if agent is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-            conversation = db.create_conversation(
-                user_id=session[1],
-                agent_id=id,
-                proficiency=agent[3],
-                model=DEFAULT_MODEL)
+            # Open the existing conversation with this friend if there is one;
+            # otherwise start a fresh one.
+            conversation_id = db.find_conversation_for_agent(session[1], id)
+            if conversation_id is None:
+                conversation = db.create_conversation(
+                    user_id=session[1],
+                    agent_id=id,
+                    proficiency=agent[3],
+                    model=DEFAULT_MODEL)
+                conversation_id = conversation[0]
         return RedirectResponse(
-            '/c/%d' % conversation[0],
+            '/c/%d' % conversation_id,
             status_code=status.HTTP_302_FOUND)
 
     @app.get('/stream')
