@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+import markdown as markdown_lib
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import (
@@ -38,8 +40,12 @@ TEMPLATES = Jinja2Templates(directory='templates')
 
 
 def reply_fragment(conversation_id: int, message: str) -> str:
-    # OOB fragment that appends a reply to an open conversation's messages.
-    return ('<div id="messages-%d" hx-swap-oob="beforeend"><div>%s</div></div>'
+    # OOB fragment that appends a reply chunk (incoming letter) to an open
+    # conversation's messages. Live chunks stay escaped plain text; only the
+    # server-rendered history renders the persona's markdown.
+    return ('<div id="messages-%d" hx-swap-oob="beforeend">'
+            '<article class="letter letter--in"><div class="letter__body">%s'
+            '</div></article></div>'
             % (conversation_id, html.escape(message)))
 
 
@@ -57,6 +63,16 @@ def presence_fragment(conversation_id: int, agent: dict) -> str:
     return (
         '<span id="presence-%d" hx-swap-oob="true">%s %s</span>'
         % (conversation_id, label, local_time))
+
+
+def render_message(role: str, content: str) -> str:
+    # Server-rendered history: the persona's markdown becomes HTML; user text is
+    # escaped. Python-Markdown passes raw HTML through, so escape first (markdown
+    # syntax is *_#` etc., untouched by html.escape) — literal markup in an LLM
+    # reply then shows as text instead of executing.
+    if role == 'assistant':
+        return markdown_lib.markdown(html.escape(content))
+    return html.escape(content)
 
 
 def get_config(
@@ -274,15 +290,16 @@ def App(**kwargs):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
             conversation = db.conversation_to_dict(row)
             messages = [
-                {'role': r, 'content': c}
-                for r, c in db.get_messages_by_conversation(id)]
-        presence = '%s %s' % (
-            presence_label(conversation), presence_local_time(conversation))
+                {'role': r,
+                 'html': render_message(r, c),
+                 'created_at': ts}
+                for r, c, ts in db.get_messages_by_conversation(id)]
         return TEMPLATES.TemplateResponse(
             request, 'chat.html',
             {'conversation': conversation,
              'messages': messages,
-             'presence': presence})
+             'presence': presence_label(conversation),
+             'local_time': presence_local_time(conversation)})
 
     @app.get('/c/{id}/settings', response_class=HTMLResponse)
     def conversation_settings(
@@ -514,8 +531,9 @@ def App(**kwargs):
         # saves it; run it off-thread and stream the reply back over /stream.
         background_tasks.add_task(reply_and_push, session[1], id, message)
 
-        # user message partial for an immediate echo
-        return '<div>%s</div>' % html.escape(message)
+        # user message partial for an immediate echo (outgoing letter)
+        return ('<article class="letter letter--out"><div class="letter__body">'
+                '%s</div></article>' % html.escape(message))
 
     @app.post('/mailgun', status_code=200)
     async def mailgun(

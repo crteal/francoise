@@ -1,0 +1,113 @@
+/* Chat — the signature correspondence surface. A letter/postcard exchange:
+   the persona (incoming) writes from the left with a stamp; you (outgoing)
+   reply aligned right. Loads after app.css (tokens + .postcard/.stamp/.avion). */
+
+.chat { max-width: 760px; }
+
+/* Editorial header — persona name + place, presence as a postmark. */
+.chat-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-xs);
+}
+.chat-head .kicker { margin-bottom: var(--space-xs); }
+.chat-head h1 { margin: 0; }
+
+/* Presence postmark — circular cancellation in vermilion; local time inside. */
+.chat .postmark {
+  min-width: 108px; min-height: 108px; padding: var(--space-sm);
+  border-radius: 50%;
+  border: 2px dashed var(--vermilion); color: var(--vermilion);
+  display: grid; place-content: center; text-align: center;
+  font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  transform: rotate(-8deg);
+  flex: none;
+}
+
+.chat-settings { margin: 0 0 var(--space-lg); }
+.chat-settings a {
+  font-family: "Work Sans", sans-serif; font-weight: 500;
+  font-size: 13px; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--inkMuted); text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.chat-settings a:hover { color: var(--ink); border-bottom-color: var(--coral); }
+
+/* The exchange. */
+.letters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+/* A single letter. Incoming = a postcard on paperShade with a stamp corner;
+   outgoing = your hand, pulled right on the teal register. */
+.letter {
+  position: relative;
+  max-width: 84%;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--rule);
+  background: var(--paperShade);
+}
+.letter__body { margin: 0; }
+/* Render markdown cleanly at a readable measure. */
+.letter__body :first-child { margin-top: 0; }
+.letter__body :last-child { margin-bottom: 0; }
+.letter__body p { margin: 0 0 var(--space-sm); }
+.letter__body a { color: var(--teal); }
+.letter__body pre, .letter__body code {
+  font-family: "Courier Prime", monospace; font-size: 13px;
+}
+.letter__body pre {
+  background: var(--paper); border: 1px solid var(--rule);
+  padding: var(--space-sm); overflow-x: auto;
+}
+
+/* Postmark date under each letter. */
+.letter__stamp {
+  display: block;
+  margin-top: var(--space-sm);
+  font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--inkMuted);
+}
+
+/* Incoming — the friend's letter, left, with a par-avion accent + stamp. */
+.letter--in {
+  align-self: flex-start;
+  border-left: 3px solid var(--coral);
+}
+.letter--in::after {
+  content: "PAR AVION";
+  position: absolute; top: -9px; right: var(--space-md);
+  padding: 1px 6px; background: var(--paper);
+  border: 1px dashed var(--vermilion); color: var(--vermilion);
+  font-family: "Courier Prime", monospace; font-weight: 700;
+  font-size: 8px; letter-spacing: .12em;
+}
+
+/* Outgoing — your reply, right, on the teal register. */
+.letter--out {
+  align-self: flex-end;
+  background: var(--teal);
+  color: var(--paper);
+  border-color: var(--teal);
+}
+.letter--out .letter__body a { color: var(--paper); text-decoration: underline; }
+.letter--out .letter__stamp { color: var(--paper); opacity: .8; }
+
+/* Compose — a docked field with an accent Send. */
+.compose {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: stretch;
+  padding-top: var(--space-md);
+  border-top: 2px solid var(--ink);
+}
+.compose input { flex: 1; }
+.compose .button { flex: none; }

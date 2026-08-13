@@ -9,6 +9,7 @@ dependencies = [
     "fastapi==0.120.2",
     "jinja2",
     "litellm==1.96.0",
+    "markdown>=3.10.3",
     "pyoxigraph==0.5.9",
     "python-dotenv==1.2.1",
     "python-multipart",

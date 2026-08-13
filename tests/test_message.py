@@ -50,9 +50,9 @@ class TestMessageRoute(unittest.TestCase):
                 data={'message': 'Bonjour'})
 
         self.assertEqual(response.status_code, 200)
-        # response holds the immediate user echo partial
+        # response holds the immediate user echo partial (outgoing letter)
         self.assertIn('Bonjour', response.text)
-        self.assertIn('<div>', response.text)
+        self.assertIn('letter--out', response.text)
 
         # the web path streams the reply through the core
         mock_core.assert_called_once_with(conversation_id, 'Bonjour')
@@ -70,7 +70,7 @@ class TestMessageRoute(unittest.TestCase):
             if 'id="messages-%d"' % conversation_id in f]
         self.assertEqual(len(message_fragments), 3)
         self.assertEqual(
-            ''.join(re.search(r'<div>(.*)</div></div>', f).group(1)
+            ''.join(re.search(r'letter__body">(.*)</div></article></div>', f).group(1)
                     for f in message_fragments),
             'Salut !')
 
